@@ -1,8 +1,8 @@
 ﻿using Grades.Entities;
 
-namespace BgutuGrades.Entities
+namespace BgutuGrades.DTO
 {
-    public class Class
+    public class ClassDTO
     {
         public int Id { get; set; }
         public int WeekDay { get; set; }
@@ -10,7 +10,5 @@ namespace BgutuGrades.Entities
         public ClassType Type { get; set; }
         public int DisciplineId { get; set; }
         public int GroupId { get; set; }
-        public Discipline? Discipline { get; set; }
-        public Group? Group { get; set; }
     }
 }
