@@ -53,7 +53,7 @@ namespace BgutuGrades
 
             app.MapScalarApiReference("", options =>
             {
-                options.WithTitle("FakeObsidian API")
+                options.WithTitle("BGITU.GRADES API")
                         .WithTheme(ScalarTheme.Purple)
                         .WithOpenApiRoutePattern("/swagger/v1/swagger.json");
             });
