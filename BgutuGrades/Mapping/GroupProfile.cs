@@ -11,10 +11,7 @@ namespace BgutuGrades.Mapping
         {
             CreateMap<CreateGroupRequest, Group>();
             CreateMap<UpdateGroupRequest, Group>();
-
-            CreateMap<Group, GroupDTO>();
-
-            CreateMap<GroupDTO, GroupResponse>();
+            CreateMap<Group, GroupResponse>();
         }
     }
 }

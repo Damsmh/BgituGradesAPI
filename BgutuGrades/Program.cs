@@ -1,4 +1,5 @@
 using BgutuGrades.Data;
+using BgutuGrades.Features;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using Scalar.AspNetCore;
@@ -26,7 +27,9 @@ namespace BgutuGrades
                                .AllowAnyHeader();
                     });
             });
-            
+            builder.Services
+                .AddRepositories()
+                .AddApplicationServices();
             builder.Services.AddSignalR();
             builder.Services.AddAutoMapper(cfg => { }, typeof(Program).Assembly);
             builder.Services.AddControllers()

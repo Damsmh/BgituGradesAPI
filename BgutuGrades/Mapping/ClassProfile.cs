@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using BgutuGrades.DTO;
 using BgutuGrades.Entities;
 using BgutuGrades.Models.Class;
 
@@ -10,10 +9,8 @@ namespace BgutuGrades.Mapping
         public ClassProfile()
         {
             CreateMap<CreateClassRequest, Class>();
-
-            CreateMap<Class, ClassDTO>();
-
-            CreateMap<ClassDTO, ClassResponse>();
+            CreateMap<GetClassDateRequest, ClassDateResponse>();
+            CreateMap<Class, ClassResponse>();
         }
     }
 }
