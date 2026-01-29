@@ -12,6 +12,7 @@ namespace BgutuGrades.Repositories
         Task<Group?> GetByIdAsync(int id);
         Task<bool> UpdateGroupAsync(Group entity);
         Task<bool> DeleteGroupAsync(int id);
+        Task DeleteAllAsync();
     }
 
     public class GroupRepository(AppDbContext dbContext) : IGroupRepository
@@ -22,6 +23,11 @@ namespace BgutuGrades.Repositories
             await _dbContext.Groups.AddAsync(entity);
             await _dbContext.SaveChangesAsync();
             return entity;
+        }
+
+        public async Task DeleteAllAsync()
+        {
+            await _dbContext.Groups.ExecuteDeleteAsync();
         }
 
         public async Task<bool> DeleteGroupAsync(int id)

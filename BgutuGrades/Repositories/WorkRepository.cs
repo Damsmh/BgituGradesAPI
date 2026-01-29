@@ -11,6 +11,7 @@ namespace BgutuGrades.Repositories
         Task<Work?> GetByIdAsync(int id);
         Task<bool> UpdateWorkAsync(Work entity);
         Task<bool> DeleteWorkAsync(int id);
+        Task DeleteAllAsync();
     }
 
     public class WorkRepository(AppDbContext dbContext) : IWorkRepository
@@ -51,6 +52,11 @@ namespace BgutuGrades.Repositories
             _dbContext.Update(entity);
             await _dbContext.SaveChangesAsync();
             return true;
+        }
+
+        public async Task DeleteAllAsync()
+        {
+            await _dbContext.Works.ExecuteDeleteAsync();
         }
     }
 

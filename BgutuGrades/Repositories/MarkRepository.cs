@@ -11,6 +11,7 @@ namespace BgutuGrades.Repositories
         Task<IEnumerable<Mark>> GetMarksByDisciplineAndGroupAsync(int disciplineId, int groupId);
         Task<bool> UpdateMarkAsync(Mark entity);
         Task<bool> DeleteMarkByStudentAndWorkAsync(int studentId, int workId);
+        Task DeleteAllAsync();
     }
 
     public class MarkRepository(AppDbContext dbContext) : IMarkRepository
@@ -56,6 +57,11 @@ namespace BgutuGrades.Repositories
             _dbContext.Marks.Remove(entity);
             await _dbContext.SaveChangesAsync();
             return true;
+        }
+
+        public async Task DeleteAllAsync()
+        {
+            await _dbContext.Marks.ExecuteDeleteAsync();
         }
     }
 

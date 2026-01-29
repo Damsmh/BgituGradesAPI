@@ -11,6 +11,7 @@ namespace BgutuGrades.Repositories
         Task<Discipline?> GetByIdAsync(int id);
         Task<bool> UpdateDisciplineAsync(Discipline entity);
         Task<bool> DeleteDisciplineAsync(int id);
+        Task DeleteAllAsync();
     }
 
     public class DisciplineRepository(AppDbContext dbContext) : IDisciplineRepository
@@ -21,6 +22,11 @@ namespace BgutuGrades.Repositories
             await _dbContext.Disciplines.AddAsync(entity);
             await _dbContext.SaveChangesAsync();  
             return entity;
+        }
+
+        public async Task DeleteAllAsync()
+        {
+            await _dbContext.Disciplines.ExecuteDeleteAsync();
         }
 
         public async Task<bool> DeleteDisciplineAsync(int id)

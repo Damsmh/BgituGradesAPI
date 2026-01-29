@@ -11,6 +11,7 @@ namespace BgutuGrades.Repositories
         Task<Transfer?> GetByIdAsync(int id);
         Task<bool> UpdateTransferAsync(Transfer entity);
         Task<bool> DeleteTransferAsync(int id);
+        Task DeleteAllAsync();
     }
 
     public class TransferRepository(AppDbContext dbContext) : ITransferRepository
@@ -51,6 +52,11 @@ namespace BgutuGrades.Repositories
             _dbContext.Update(entity);
             await _dbContext.SaveChangesAsync();
             return true;
+        }
+
+        public async Task DeleteAllAsync()
+        {
+            await _dbContext.Transfers.ExecuteDeleteAsync();
         }
     }
 

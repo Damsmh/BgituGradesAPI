@@ -11,6 +11,7 @@ namespace BgutuGrades.Repositories
         Task<IEnumerable<Presence>> GetPresencesByDisciplineAndGroupAsync(int disciplineId, int groupId);
         Task<bool> DeletePresenceByStudentAndDateAsync(int studentId, DateOnly date);
         Task<bool> UpdatePresenceAsync(Presence entity);
+        Task DeleteAllAsync();
     }
 
     public class PresenceRepository(AppDbContext dbContext) : IPresenceRepository
@@ -57,6 +58,10 @@ namespace BgutuGrades.Repositories
             await _dbContext.SaveChangesAsync();
             return true;
         }
-    }
 
+        public async Task DeleteAllAsync()
+        {
+            await _dbContext.Presences.ExecuteDeleteAsync();
+        }
+    }
 }
