@@ -55,10 +55,9 @@ namespace BgutuGrades
 
             app.UseSwagger();
             app.MapSwagger();
-
             app.UseHttpsRedirection();
             app.UseAuthorization();
-
+            app.UseCors();
             app.MapControllers();
             app.MapHub<MarkHub>("/hubs/mark");
 
