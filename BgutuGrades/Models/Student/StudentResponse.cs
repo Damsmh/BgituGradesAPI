@@ -1,4 +1,7 @@
-﻿namespace BgutuGrades.Models.Student
+﻿using BgutuGrades.Models.Mark;
+using BgutuGrades.Models.Presence;
+
+namespace BgutuGrades.Models.Student
 {
     public class StudentResponse
     {

@@ -1,4 +1,7 @@
-﻿using Grades.Entities;
+﻿using BgutuGrades.Models.Mark;
+using BgutuGrades.Models.Presence;
+using BgutuGrades.Models.Student;
+using Grades.Entities;
 
 namespace BgutuGrades.Models.Class
 {
@@ -14,7 +17,22 @@ namespace BgutuGrades.Models.Class
 
     public class ClassDateResponse
     {
+        public int Id { get; set; }
         public DateOnly Date { get; set; }
         public ClassType ClassType { get; set; }
+    }
+
+    public class FullGradeMarkResponse
+    {
+        public int StudentId { get; set; }
+        public string? Name { get; set; }
+        public List<GradeMarkResponse>? Marks { get; set; }
+    }
+
+    public class FullGradePresenceResponse
+    {
+        public int StudentId { get; set; }
+        public string? Name { get; set; }
+        public List<GradePresenceResponse>? Presences { get; set; }
     }
 }

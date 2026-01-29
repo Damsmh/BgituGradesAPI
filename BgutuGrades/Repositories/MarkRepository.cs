@@ -43,6 +43,8 @@ namespace BgutuGrades.Repositories
             return entities;
         }
 
+
+
         public async Task<bool> UpdateMarkAsync(Mark entity)
         {
             _dbContext.Update(entity);

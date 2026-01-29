@@ -1,6 +1,10 @@
 ﻿using BgutuGrades.Data;
+using BgutuGrades.Models.Class;
+using BgutuGrades.Models.Mark;
+using BgutuGrades.Models.Presence;
 using Grades.Entities;
 using Microsoft.EntityFrameworkCore;
+using System.Text.RegularExpressions;
 
 namespace BgutuGrades.Repositories
 {
@@ -8,6 +12,8 @@ namespace BgutuGrades.Repositories
     {
         Task<IEnumerable<Student>> GetAllStudentsAsync();
         Task<IEnumerable<Student>> GetStudentsByGroupAsync(int groupId);
+        Task<IEnumerable<FullGradeMarkResponse>> GetMarksGrade(IEnumerable<ClassDateResponse> scheduleDates, int groupId, int disciplineId);
+        Task<IEnumerable<FullGradePresenceResponse>> GetPresenseGrade(IEnumerable<ClassDateResponse> scheduleDates, int groupId, int disciplineId);
         Task<Student> CreateStudentAsync(Student entity);
         Task<Student?> GetByIdAsync(int id);
         Task<bool> UpdateStudentAsync(Student entity);
@@ -54,6 +60,54 @@ namespace BgutuGrades.Repositories
                 .AsNoTracking()
                 .ToListAsync();
             return entities;
+        }
+        
+        public async Task<IEnumerable<FullGradePresenceResponse>>GetPresenseGrade(IEnumerable<ClassDateResponse> scheduleDates, int groupId, int disciplineId)
+        {
+            var students = await _dbContext.Students
+                .Where(s => s.GroupId == groupId)
+                .Select(s => new FullGradePresenceResponse
+                {
+                    StudentId = s.Id,
+                    Name = s.Name,
+                    Presences = scheduleDates.Select(date => new GradePresenceResponse
+                    {
+                        ClassId = date.Id,
+                        Date = date.Date,
+                        IsPresent = s.Presences
+                            .Where(p => p.DisciplineId == disciplineId && p.Date == date.Date)
+                            .Select(p => p.IsPresent)
+                            .DefaultIfEmpty(PresenceType.Absent)
+                            .FirstOrDefault()
+                    }).ToList()
+                })
+                .AsNoTracking()
+                .ToListAsync();
+            return students;
+        }
+
+        public async Task<IEnumerable<FullGradeMarkResponse>> GetMarksGrade(IEnumerable<ClassDateResponse> scheduleDates, int groupId, int disciplineId)
+        {
+            var students = await _dbContext.Students
+                .Where(s => s.GroupId == groupId)
+                .Select(s => new FullGradeMarkResponse
+                {
+                    StudentId = s.Id,
+                    Name = s.Name,
+                    Marks = scheduleDates.Select(date => new GradeMarkResponse
+                    {
+                        ClassId = date.Id,
+                        Date = date.Date,
+                        Value = s.Marks
+                            .Where(m => m.Work.DisciplineId == disciplineId &&
+                                       m.Date == date.Date)
+                            .Select(m => m.Value)
+                            .FirstOrDefault()
+                    }).ToList()
+                })
+                .AsNoTracking()
+                .ToListAsync();
+            return students;
         }
 
         public async Task<bool> UpdateStudentAsync(Student entity)

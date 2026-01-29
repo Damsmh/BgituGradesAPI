@@ -48,8 +48,9 @@ namespace BgutuGrades.Repositories
         public async Task<IEnumerable<Class>> GetClassesByDisciplineAndGroupAsync(int disciplineId, int groupId)
         {
             var entities = await _dbContext.Classes
-                .Where(c => c.DisciplineId == disciplineId && c.GroupId == groupId)
-                .AsNoTracking()
+                .Where(c => c.GroupId == groupId && c.DisciplineId == disciplineId)
+                .OrderBy(c => c.Weeknumber)
+                .ThenBy(c => c.WeekDay)
                 .ToListAsync();
             return entities;
         }

@@ -4,6 +4,7 @@
     {
         Present, 
         AbsentValid, 
-        AbsentInvalid
+        AbsentInvalid,
+        Absent
     }
 }

@@ -20,6 +20,22 @@ namespace BgutuGrades.Controllers
             return Ok(classDates);
         }
 
+        [HttpGet("markGrade")]
+        [ProducesResponseType(typeof(IEnumerable<FullGradeMarkResponse>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<FullGradeMarkResponse>>>GetMarkGrade([FromQuery] GetClassDateRequest request)
+        {
+            var classDates = await _classService.GetMarksByScheduleAsync(request);
+            return Ok(classDates);
+        }
+
+        [HttpGet("presenceGrade")]
+        [ProducesResponseType(typeof(IEnumerable<FullGradePresenceResponse>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<FullGradePresenceResponse>>> GetPresenceGrade([FromQuery] GetClassDateRequest request)
+        {
+            var classDates = await _classService.GetPresenceByScheduleAsync(request);
+            return Ok(classDates);
+        }
+
         [HttpPost]
         [ProducesResponseType(typeof(ClassResponse), StatusCodes.Status201Created)]
         public async Task<ActionResult<ClassResponse>> CreateClass([FromBody] CreateClassRequest request)
