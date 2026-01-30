@@ -20,6 +20,14 @@ namespace BgutuGrades.Controllers
             return Ok(groups);
         }
 
+        [HttpGet("all")]
+        [ProducesResponseType(typeof(IEnumerable<GroupResponse>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<GroupResponse>>> GetAllGroups()
+        {
+            var groups = await _groupService.GetAllAsync();
+            return Ok(groups);
+        }
+
         [HttpPost]
         [ProducesResponseType(typeof(GroupResponse), StatusCodes.Status201Created)]
         public async Task<ActionResult<GroupResponse>> CreateGroup([FromBody] CreateGroupRequest request)

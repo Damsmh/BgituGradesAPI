@@ -16,6 +16,7 @@ namespace BgutuGrades.Features
             services.AddScoped<IMarkRepository, MarkRepository>();
             services.AddScoped<IPresenceRepository, PresenceRepository>();
             services.AddScoped<ITransferRepository, TransferRepository>();
+            services.AddScoped<IKeyRepository, KeyRepository>();
             return services;
         }
 
@@ -31,6 +32,7 @@ namespace BgutuGrades.Features
             services.AddScoped<ITransferService, TransferService>();
             services.AddScoped<IMigrationService, MigrationsService>();
             services.AddScoped<IApiKeyProvider, ApiKeyProvider>();
+            services.AddScoped<IKeyService, KeyService>();
             return services;
         }
     }

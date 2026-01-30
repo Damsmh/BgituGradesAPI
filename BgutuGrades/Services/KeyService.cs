@@ -1,4 +1,5 @@
-﻿using BgutuGrades.Entities;
+﻿using AutoMapper;
+using BgutuGrades.Entities;
 using BgutuGrades.Models.Key;
 using BgutuGrades.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -13,41 +14,43 @@ namespace BgutuGrades.Services
         Task<KeyResponse> GenerateKeyAsync(Role role);
         Task<bool> DeleteKeyAsync(string key);
     }
-    public class KeyService(IKeyRepository keyRepository) : IKeyService
+    public class KeyService(IKeyRepository keyRepository, IMapper mapper) : IKeyService
     {
         private readonly IKeyRepository _keyRepository = keyRepository;
-        public Task<KeyResponse> GenerateKeyAsync(Role role)
+        private readonly IMapper _mapper = mapper;
+        public async Task<KeyResponse> GenerateKeyAsync(Role role)
         {
-            throw new NotImplementedException();
-            //var newKey = RandomNumberGenerator.GetHexString(32, true);
-            //var apiKey = new ApiKey
-            //{
-            //    Key = newKey,
-            //    OwnerName = "PukiKaki",
-            //    Role = role.ToString(),
-            //    ExpiryDate = role == Role.STUDENT ? DateTime.UtcNow.AddDays(30) : null
-            //};
+            var newKey = RandomNumberGenerator.GetHexString(32, true);
+            var apiKey = new ApiKey
+            {
+                Key = newKey,
+                OwnerName = "PukiKaki",
+                Role = role.ToString(),
+                ExpiryDate = role == Role.STUDENT ? DateTime.UtcNow.AddDays(30) : null
+            };
 
-            //_dbContext.ApiKeys.Add(apiKey);
-            //await _dbContext.SaveChangesAsync();
-
-            //var shareLink = $"{Request.Scheme}://{Request.Host}/api/grades?Key={newKey}";
-            //return Ok(new { ShareLink = shareLink });
+            var createdKey = await _keyRepository.CreateKeyAsync(apiKey);
+            var response = _mapper.Map<KeyResponse>(createdKey);
+            return response;
         }
 
-        public Task<bool> DeleteKeyAsync(string key)
+        public async Task<bool> DeleteKeyAsync(string key)
         {
-            throw new NotImplementedException();
+            return await _keyRepository.DeleteKeyAsync(key);
         }
 
-        public Task<IEnumerable<KeyResponse>> GetKeysAsync()
+        public async Task<IEnumerable<KeyResponse>> GetKeysAsync()
         {
-            throw new NotImplementedException();
+            var storedKeys = _keyRepository.GetKeysAsync();
+            var response = _mapper.Map<IEnumerable<KeyResponse>>(storedKeys);
+            return response;
         }
 
-        public Task<KeyResponse> GetKeyAsync(string key)
+        public async Task<KeyResponse> GetKeyAsync(string key)
         {
-            throw new NotImplementedException();
+            var storedKey = _keyRepository.GetAsync(key);
+            var response = _mapper.Map<KeyResponse>(storedKey);
+            return response;
         }
     }
 }

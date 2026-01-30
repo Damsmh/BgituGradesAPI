@@ -1,7 +1,6 @@
 ﻿using BgutuGrades.Models.Class;
 using BgutuGrades.Models.Student;
 using BgutuGrades.Services;
-using Grades.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BgutuGrades.Controllers

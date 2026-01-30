@@ -42,6 +42,11 @@ namespace BgutuGrades.Controllers
         public async Task<ActionResult<KeyResponse>> CreateSharedKey()
         {
             var key = await _keyService.GenerateKeyAsync(Entities.Role.STUDENT);
+            var response = new SharedKeyResponse
+            {
+                Key = key.Key,
+                Link = $"{Request.Scheme}://{Request.Host}/api/grades?Key={key.Key}"
+            };
             return CreatedAtAction(nameof(GetKey), new { key = key.Key }, key);
         }
 

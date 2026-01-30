@@ -8,6 +8,7 @@ namespace BgutuGrades.Services
     public interface IGroupService
     {
         Task<IEnumerable<GroupResponse>> GetGroupsByDisciplineAsync(int disciplineId);
+        Task<IEnumerable<GroupResponse>> GetAllAsync();
         Task<GroupResponse> CreateGroupAsync(CreateGroupRequest request);
         Task<GroupResponse?> GetGroupByIdAsync(int id);
         Task<bool> UpdateGroupAsync(UpdateGroupRequest request);
@@ -29,6 +30,13 @@ namespace BgutuGrades.Services
         public async Task<bool> DeleteGroupAsync(int id)
         {
             return await _groupRepository.DeleteGroupAsync(id);
+        }
+
+        public async Task<IEnumerable<GroupResponse>> GetAllAsync()
+        {
+            var groups = await _groupRepository.GetAllAsync();
+            var response = _mapper.Map<IEnumerable<GroupResponse>>(groups);
+            return response;
         }
 
         public async Task<GroupResponse?> GetGroupByIdAsync(int id)

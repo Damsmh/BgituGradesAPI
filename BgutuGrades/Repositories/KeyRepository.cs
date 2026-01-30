@@ -1,4 +1,6 @@
-﻿using BgutuGrades.Entities;
+﻿using BgutuGrades.Data;
+using BgutuGrades.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace BgutuGrades.Repositories
 {
@@ -9,26 +11,34 @@ namespace BgutuGrades.Repositories
         Task<ApiKey?> GetAsync(string key);
         Task<bool> DeleteKeyAsync(string key);
     }
-    public class KeyRepository : IKeyRepository
+    public class KeyRepository(AppDbContext dbContext) : IKeyRepository
     {
-        public Task<ApiKey> CreateKeyAsync(ApiKey entity)
+        private readonly AppDbContext _dbContext = dbContext;
+        public async Task<ApiKey> CreateKeyAsync(ApiKey entity)
         {
-            throw new NotImplementedException();
+            await _dbContext.ApiKeys.AddAsync(entity);
+            await _dbContext.SaveChangesAsync();
+            return entity;
         }
 
-        public Task<bool> DeleteKeyAsync(string key)
+        public async Task<bool> DeleteKeyAsync(string key)
         {
-            throw new NotImplementedException();
+            var storedKey = await GetAsync(key);
+            _dbContext.ApiKeys.Remove(storedKey);
+            await _dbContext.SaveChangesAsync();
+            return true;
         }
 
-        public Task<ApiKey?> GetAsync(string key)
+        public async Task<ApiKey?> GetAsync(string key)
         {
-            throw new NotImplementedException();
+            var storedKey = await _dbContext.ApiKeys.FindAsync(key);
+            return storedKey;
         }
 
-        public Task<IEnumerable<ApiKey>> GetKeysAsync()
+        public async Task<IEnumerable<ApiKey>> GetKeysAsync()
         {
-            throw new NotImplementedException();
+            var keys = await _dbContext.ApiKeys.AsNoTracking().ToListAsync();
+            return keys;
         }
     }
 }

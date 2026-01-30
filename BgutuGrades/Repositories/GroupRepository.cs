@@ -8,6 +8,7 @@ namespace BgutuGrades.Repositories
 {
     public interface IGroupRepository {
         Task<IEnumerable<Group>> GetGroupsByDisciplineAsync(int disciplineId);
+        Task<IEnumerable<Group>> GetAllAsync();
         Task<Group> CreateGroupAsync(Group entity);
         Task<Group?> GetByIdAsync(int id);
         Task<bool> UpdateGroupAsync(Group entity);
@@ -35,6 +36,12 @@ namespace BgutuGrades.Repositories
             var entity = await GetByIdAsync(id);
             _dbContext.Groups.Remove(entity);
             return true;
+        }
+
+        public async Task<IEnumerable<Group>> GetAllAsync()
+        {
+            var groups = await _dbContext.Groups.AsNoTracking().ToListAsync();
+            return groups;
         }
 
         public async Task<Group?> GetByIdAsync(int id)
