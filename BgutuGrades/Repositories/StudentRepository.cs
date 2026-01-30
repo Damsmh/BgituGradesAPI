@@ -77,7 +77,7 @@ namespace BgutuGrades.Repositories
                         IsPresent = s.Presences
                             .Where(p => p.DisciplineId == disciplineId && p.Date == date.Date)
                             .Select(p => p.IsPresent)
-                            .DefaultIfEmpty(PresenceType.Absent)
+                            .DefaultIfEmpty(PresenceType.ABSENT)
                             .FirstOrDefault()
                     }).ToList()
                 })

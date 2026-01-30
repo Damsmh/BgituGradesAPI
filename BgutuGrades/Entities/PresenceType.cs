@@ -2,9 +2,9 @@
 {
     public enum PresenceType
     {
-        Present, 
-        AbsentValid, 
-        AbsentInvalid,
-        Absent
+        PRESENT, 
+        ANSENTVALID, 
+        ABSENTINVALID,
+        ABSENT
     }
 }

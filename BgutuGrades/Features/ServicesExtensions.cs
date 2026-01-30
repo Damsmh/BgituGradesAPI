@@ -1,4 +1,5 @@
-﻿using BgutuGrades.Repositories;
+﻿using AspNetCore.Authentication.ApiKey;
+using BgutuGrades.Repositories;
 using BgutuGrades.Services;
 
 namespace BgutuGrades.Features
@@ -28,6 +29,7 @@ namespace BgutuGrades.Features
             services.AddScoped<IMarkService, MarkService>();
             services.AddScoped<IPresenceService, PresenceService>();
             services.AddScoped<ITransferService, TransferService>();
+            services.AddScoped<IApiKeyProvider, ApiKeyProvider>();
             return services;
         }
     }

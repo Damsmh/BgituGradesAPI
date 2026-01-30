@@ -7,6 +7,7 @@ namespace BgutuGrades.Data
 {
     public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
     {
+        public DbSet<ApiKey> ApiKeys { get; set; }
         public DbSet<Group> Groups { get; set; }
         public DbSet<Discipline> Disciplines { get; set; }
         public DbSet<Class> Classes { get; set; }
@@ -24,6 +25,7 @@ namespace BgutuGrades.Data
             modelBuilder.Entity<Presence>()
                 .Property(u => u.IsPresent)
                 .HasConversion(new EnumToStringConverter<PresenceType>());
+            modelBuilder.Entity<ApiKey>().HasKey(k => k.Key);
         }
     }
 }

@@ -11,10 +11,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BgutuGrades.Hubs
 {
-    public class GradeHub(IMarkService markService, IClassService classService, AppDbContext dbContext, IMapper mapper) : Hub
+    public class GradeHub(IClassService classService, AppDbContext dbContext) : Hub
     {
-        private readonly IMapper _mapper = mapper;
-        private readonly IMarkService _markService = markService;
         private readonly IClassService _classService = classService;
         private readonly AppDbContext _dbContext = dbContext;
 
@@ -43,7 +41,7 @@ namespace BgutuGrades.Hubs
             }
             else
             {
-                _dbContext.Marks.Add(new Mark
+                await _dbContext.Marks.AddAsync(new Mark
                 {
                     StudentId = request.StudentId,
                     WorkId = mark.WorkId,
@@ -80,7 +78,7 @@ namespace BgutuGrades.Hubs
             }
             else
             {
-                _dbContext.Presences.Add(new Presence
+                await _dbContext.Presences.AddAsync(new Presence
                 {
                     DisciplineId = request.DisciplineId,
                     StudentId = request.StudentId,
