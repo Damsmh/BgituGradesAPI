@@ -18,14 +18,14 @@ namespace BgutuGrades.Hubs
 
         public async Task GetMarkGrade(GetClassDateRequest request)
         {
-            var works = await _classService.GetMarksByWorksAsync(request);
-            await Clients.Caller.SendAsync("Receive", works);
+            var marks = await _classService.GetMarksByWorksAsync(request);
+            await Clients.Caller.SendAsync("ReceiveMarks", marks);
         }
 
         public async Task GetPresenceGrade(GetClassDateRequest request)
         {
             var classDates = await _classService.GetPresenceByScheduleAsync(request);
-            await Clients.Caller.SendAsync("Receive", classDates);
+            await Clients.Caller.SendAsync("ReceivePresences", classDates);
         }
 
         public async Task UpdateMarkGrade([FromQuery] UpdateMarkGradeRequest request, [FromBody] UpdateMarkRequest mark)
@@ -53,7 +53,7 @@ namespace BgutuGrades.Hubs
 
             await _dbContext.SaveChangesAsync();
 
-            await Clients.All.SendAsync("Updated", new FullGradeMarkResponse
+            await Clients.All.SendAsync("UpdatedMark", new FullGradeMarkResponse
             {
                 StudentId = request.StudentId,
                 Marks = [new GradeMarkResponse
@@ -94,7 +94,7 @@ namespace BgutuGrades.Hubs
                     Date = presence.Date 
                 }] 
             };
-            await Clients.All.SendAsync("Updated", response);
+            await Clients.All.SendAsync("UpdatedPresence", response);
         }
     }
 }
