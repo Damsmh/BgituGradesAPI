@@ -14,6 +14,7 @@ namespace BgutuGrades.Models.Presence
     public class GradePresenceResponse
     {
         public int ClassId { get; set; }
+        public ClassType ClassType { get; set; }
         public PresenceType IsPresent { get; set; }
         public DateOnly Date { get; set; }
     }

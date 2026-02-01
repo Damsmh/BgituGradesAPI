@@ -3,7 +3,7 @@
     public enum PresenceType
     {
         PRESENT, 
-        ANSENTVALID, 
+        ABSENTVALID, 
         ABSENTINVALID,
         ABSENT
     }
