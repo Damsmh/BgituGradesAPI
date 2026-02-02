@@ -28,26 +28,26 @@ namespace BgutuGrades.Hubs
             await Clients.Caller.SendAsync("ReceivePresences", classDates);
         }
 
-        public async Task UpdateMarkGrade([FromQuery] UpdateMarkGradeRequest request, [FromBody] UpdateMarkRequest mark)
+        public async Task UpdateMarkGrade(UpdateMarkGradeRequest request)
         {
             var existing = await _dbContext.Marks
-                .FirstOrDefaultAsync(m => m.StudentId == request.StudentId && m.WorkId == mark.WorkId);
+                .FirstOrDefaultAsync(m => m.StudentId == request.StudentId && m.WorkId == request.WorkId);
 
             if (existing != null)
             {
-                existing.Value = mark.Value;
-                existing.Date = mark.Date;
-                existing.IsOverdue = mark.IsOverdue;
+                existing.Value = request.Value;
+                existing.Date = request.Date;
+                existing.IsOverdue = request.IsOverdue;
             }
             else
             {
                 await _dbContext.Marks.AddAsync(new Mark
                 {
                     StudentId = request.StudentId,
-                    WorkId = mark.WorkId,
-                    Value = mark.Value,
-                    Date = mark.Date,
-                    IsOverdue = mark.IsOverdue
+                    WorkId = request.WorkId,
+                    Value = request.Value,
+                    Date = request.Date,
+                    IsOverdue = request.IsOverdue
                 });
             }
 
@@ -58,23 +58,23 @@ namespace BgutuGrades.Hubs
                 StudentId = request.StudentId,
                 Marks = [new GradeMarkResponse
                 {
-                    WorkId = mark.WorkId,
-                    Value = mark.Value,
+                    WorkId = request.WorkId,
+                    Value = request.Value,
                 }]
             });
         }
 
-        public async Task UpdatePresenceGrade([FromQuery] UpdatePresenceGradeRequest request, [FromBody] UpdatePresenceRequest presence)
+        public async Task UpdatePresenceGrade(UpdatePresenceGradeRequest request)
         {
 
             var existing = await _dbContext.Presences
                 .FirstOrDefaultAsync(p => p.DisciplineId == request.DisciplineId &&
                                          p.StudentId == request.StudentId &&
-                                         p.Date == presence.Date);
+                                         p.Date == request.Date);
 
             if (existing != null)
             {
-                existing.IsPresent = presence.IsPresent;
+                existing.IsPresent = request.IsPresent;
             }
             else
             {
@@ -82,16 +82,16 @@ namespace BgutuGrades.Hubs
                 {
                     DisciplineId = request.DisciplineId,
                     StudentId = request.StudentId,
-                    Date = presence.Date,
-                    IsPresent = presence.IsPresent
+                    Date = request.Date,
+                    IsPresent = request.IsPresent
                 });
             }
             var response = new FullGradePresenceResponse {
                 StudentId = request.StudentId,
                 Presences = [new GradePresenceResponse { 
                     ClassId = request.ClassId, 
-                    IsPresent = presence.IsPresent, 
-                    Date = presence.Date 
+                    IsPresent = request.IsPresent, 
+                    Date = request.Date 
                 }] 
             };
             await Clients.All.SendAsync("UpdatedPresence", response);
