@@ -10,6 +10,7 @@ namespace BgutuGrades.Services
         Task<IEnumerable<DisciplineResponse>> GetAllDisciplinesAsync();
         Task<DisciplineResponse> CreateDisciplineAsync(CreateDisciplineRequest request);
         Task<DisciplineResponse?> GetDisciplineByIdAsync(int id);
+        Task<IEnumerable<DisciplineResponse>?> GetDisciplineByGroupIdAsync(int groupId);
         Task<bool> UpdateDisciplineAsync(UpdateDisciplineRequest request);
         Task<bool> DeleteDisciplineAsync(int id);
     }
@@ -34,6 +35,12 @@ namespace BgutuGrades.Services
         {
             var entities = await _disciplineRepository.GetAllAsync();
             return _mapper.Map<IEnumerable<DisciplineResponse>>(entities);
+        }
+
+        public async Task<IEnumerable<DisciplineResponse>?> GetDisciplineByGroupIdAsync(int groupId)
+        {
+            var entities = await _disciplineRepository.GetByGroupIdAsync(groupId);
+            return entities == null ? null : _mapper.Map<List<DisciplineResponse>>(entities);
         }
 
         public async Task<DisciplineResponse?> GetDisciplineByIdAsync(int id)

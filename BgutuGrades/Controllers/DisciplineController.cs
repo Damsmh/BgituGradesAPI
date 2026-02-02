@@ -11,11 +11,19 @@ namespace BgutuGrades.Controllers
     {
         private readonly IDisciplineService _disciplineService = DisciplineService;
 
-        [HttpGet]
+        [HttpGet("all")]
         [ProducesResponseType(typeof(IEnumerable<DisciplineResponse>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<DisciplineResponse>>> GetDisciplines()
         {
             var Disciplines = await _disciplineService.GetAllDisciplinesAsync();
+            return Ok(Disciplines);
+        }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<DisciplineResponse>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<DisciplineResponse>>> GetDisciplinesByGroupId([FromQuery] int groupId)
+        {
+            var Disciplines = await _disciplineService.GetDisciplineByGroupIdAsync(groupId);
             return Ok(Disciplines);
         }
 
