@@ -33,7 +33,11 @@ namespace BgutuGrades
             builder.Services
                 .AddRepositories()
                 .AddApplicationServices();
-            builder.Services.AddSignalR();
+            builder.Services.AddSignalR().AddJsonProtocol(options =>
+            {
+                options.PayloadSerializerOptions.Converters.Add(
+                    new JsonStringEnumConverter());
+            }); ;
             builder.Services.AddAutoMapper(cfg => { }, typeof(Program).Assembly);
             builder.Services.AddAuthentication(ApiKeyDefaults.AuthenticationScheme)
                 .AddApiKeyInHeaderOrQueryParams<ApiKeyProvider>(options =>
@@ -68,7 +72,7 @@ namespace BgutuGrades
 
             app.UseSwagger();
             app.MapSwagger();
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseCors();

@@ -57,7 +57,7 @@ namespace BgutuGrades.Controllers
 
         [HttpPut("grade")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult<GradePresenceResponse>> UpdatePresenceGrade([FromQuery] UpdatePresenceGradeRequest request, [FromBody] UpdatePresenceRequest presence)
+        public async Task<IActionResult> UpdatePresenceGrade([FromQuery] UpdatePresenceGradeRequest request, [FromBody] UpdatePresenceRequest presence)
         {
             var existing = await _dbContext.Presences
                 .FirstOrDefaultAsync(p => p.DisciplineId == request.DisciplineId &&

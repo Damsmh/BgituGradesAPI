@@ -1,11 +1,9 @@
-﻿using AutoMapper;
-using BgutuGrades.Data;
+﻿using BgutuGrades.Data;
 using BgutuGrades.Models.Class;
 using BgutuGrades.Models.Mark;
 using BgutuGrades.Models.Presence;
 using BgutuGrades.Services;
 using Grades.Entities;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
@@ -67,24 +65,25 @@ namespace BgutuGrades.Hubs
         public async Task UpdatePresenceGrade(UpdatePresenceGradeRequest request)
         {
 
-            var existing = await _dbContext.Presences
+            var presence = await _dbContext.Presences
                 .FirstOrDefaultAsync(p => p.DisciplineId == request.DisciplineId &&
                                          p.StudentId == request.StudentId &&
                                          p.Date == request.Date);
 
-            if (existing != null)
+            if (presence != null)
             {
-                existing.IsPresent = request.IsPresent;
+                presence.IsPresent = request.IsPresent;
             }
             else
             {
-                await _dbContext.Presences.AddAsync(new Presence
+                presence = new Presence
                 {
                     DisciplineId = request.DisciplineId,
                     StudentId = request.StudentId,
                     Date = request.Date,
                     IsPresent = request.IsPresent
-                });
+                };
+                await _dbContext.Presences.AddAsync(presence);
             }
             var response = new FullGradePresenceResponse {
                 StudentId = request.StudentId,
