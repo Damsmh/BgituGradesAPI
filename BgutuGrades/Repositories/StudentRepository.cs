@@ -85,7 +85,7 @@ namespace BgutuGrades.Repositories
                     ClassId = date.Id,
                     ClassType = date.ClassType,
                     Date = date.Date,
-                    IsPresent = s.Presences.FirstOrDefault(p => p.Date == date.Date)?.IsPresent ?? PresenceType.ABSENT
+                    IsPresent = s.Presences.FirstOrDefault(p => p.Date == date.Date)?.IsPresent ?? PresenceType.PRESENT
                 }).ToList()
             });
 
