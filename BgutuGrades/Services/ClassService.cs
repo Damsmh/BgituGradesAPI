@@ -50,7 +50,8 @@ namespace BgutuGrades.Services
             var group = await _groupRepository.GetByIdAsync(request.GroupId);
             if (group == null) return [];
 
-            var classes = await _classRepository.GetClassesByDisciplineAndGroupAsync(request.DisciplineId, request.GroupId);
+            var classes = await _classRepository.GetClassesByDisciplineAndGroupAsync(
+                request.DisciplineId, request.GroupId);
 
             var startDate = startDateOverride ?? group.StudyStartDate;
             var endDate = endDateOverride ?? group.StudyEndDate;
@@ -58,22 +59,27 @@ namespace BgutuGrades.Services
 
             var dates = new List<ClassDateResponse>();
 
-
+    
             var studyStartDayOfWeek = startDate.DayOfWeek;
-            var firstMonday = startDate.AddDays(-(int)studyStartDayOfWeek); // понедельник
+            var daysToMonday = ((int)DayOfWeek.Monday - (int)studyStartDayOfWeek + 7) % 7;
+            var firstMonday = startDate.AddDays(daysToMonday);
+
+     
             var week1Start = firstMonday.AddDays(-7 * (firstWeekStart - 1));
+
+     
+            if (week1Start > endDate.AddDays(7))
+                return dates;
 
             var currentWeekStart = week1Start;
 
-            while (true)
+            while (currentWeekStart <= endDate.AddDays(7))
             {
-                if (currentWeekStart > endDate.AddDays(14)) break;
-
                 foreach (var _class in classes)
                 {
                     var lessonDate = currentWeekStart
-                        .AddDays(_class.WeekDay - 1)
-                        .AddDays(7 * (_class.Weeknumber - 1));
+                        .AddDays(_class.WeekDay - 1)  
+                        .AddDays(7 * (_class.Weeknumber - 1)); 
 
                     if (lessonDate >= startDate && lessonDate <= endDate)
                     {
@@ -86,11 +92,10 @@ namespace BgutuGrades.Services
                         });
                     }
                 }
-
-                currentWeekStart = currentWeekStart.AddDays(14); // следующая неделя
+                currentWeekStart = currentWeekStart.AddDays(14);
             }
 
-            return dates.OrderBy(d => d.Date).DistinctBy(d => d.Date).ToList();
+            return dates.OrderBy(d => d.Date).DistinctBy(d => (d.Date, d.ClassType)).ToList();
         }
 
         public async Task<bool> DeleteClassAsync(int id)
