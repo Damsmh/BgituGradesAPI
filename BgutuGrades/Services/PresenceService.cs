@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using BgutuGrades.Models.Class;
 using BgutuGrades.Models.Presence;
 using BgutuGrades.Repositories;
 using Grades.Entities;
@@ -12,6 +13,8 @@ namespace BgutuGrades.Services
         Task<IEnumerable<PresenceResponse>> GetPresencesByDisciplineAndGroupAsync(GetPresenceByDisciplineAndGroupRequest request);
         Task<bool> DeletePresenceByStudentAndDateAsync(DeletePresenceByStudentAndDateRequest request);
         Task<bool> UpdatePresenceAsync(UpdatePresenceRequest request);
+        Task<FullGradePresenceResponse> UpdateOrCreatePresenceAsync(int ClassId, UpdatePresenceGradeRequest request);
+
     }
     public class PresenceService(IPresenceRepository presenceRepository, IMapper mapper) : IPresenceService
     {
@@ -46,6 +49,31 @@ namespace BgutuGrades.Services
         {
             var entity = _mapper.Map<Presence>(request);
             return await _presenceRepository.UpdatePresenceAsync(entity);
+        }
+
+        public async Task<FullGradePresenceResponse> UpdateOrCreatePresenceAsync(int classId, UpdatePresenceGradeRequest request)
+        {
+            var presence = await _presenceRepository.GetAsync(request.StudentId, request.StudentId, request.Date);
+
+            if (presence != null)
+            {
+                await _presenceRepository.UpdatePresenceAsync(presence);
+            }
+            else
+            {
+                presence = _mapper.Map<Presence>(request);
+                await _presenceRepository.CreatePresenceAsync(presence);
+            }
+            var response = new FullGradePresenceResponse
+            {
+                StudentId = request.StudentId,
+                Presences = [new GradePresenceResponse {
+                    ClassId = classId,
+                    IsPresent = request.IsPresent,
+                    Date = request.Date
+                }]
+            };
+            return response;
         }
     }
 

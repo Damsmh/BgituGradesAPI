@@ -9,6 +9,7 @@ namespace BgutuGrades.Mapping
         public PresenceProfile()
         {
             CreateMap<CreatePresenceRequest, Presence>();
+            CreateMap<UpdatePresenceGradeRequest, Presence>();
             CreateMap<Presence, PresenceResponse>();
         }
     }

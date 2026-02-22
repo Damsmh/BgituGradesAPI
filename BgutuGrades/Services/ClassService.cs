@@ -1,11 +1,7 @@
 ﻿using AutoMapper;
-using BgutuGrades.DTO;
 using BgutuGrades.Entities;
 using BgutuGrades.Models.Class;
 using BgutuGrades.Repositories;
-using Grades.Entities;
-using Microsoft.EntityFrameworkCore;
-using System.Text.RegularExpressions;
 
 namespace BgutuGrades.Services
 {

@@ -3,111 +3,60 @@ using BgutuGrades.Models.Class;
 using BgutuGrades.Models.Mark;
 using BgutuGrades.Models.Presence;
 using BgutuGrades.Services;
-using Grades.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
 using Saunter.Attributes;
 
 namespace BgutuGrades.Hubs
 {
     [AsyncApi]
-    public class GradeHub(IClassService classService, AppDbContext dbContext) : Hub
+    public class GradeHub(IClassService classService, IPresenceService presenceService, IMarkService markService, AppDbContext dbContext) : Hub
     {
         private readonly IClassService _classService = classService;
-        private readonly AppDbContext _dbContext = dbContext;
+        private readonly IPresenceService _presenceService = presenceService;
+        private readonly IMarkService _markService = markService;
 
         [Channel("hubs/grade/GetMarkGrade")]
+        [Authorize(Policy = "ViewOnly")]
         [PublishOperation(typeof(GetClassDateRequest), Summary = "Запросить оценки по работам", OperationId = nameof(GetMarkGrade))]
         [SubscribeOperation(typeof(IEnumerable<FullGradeMarkResponse>), Summary = "Событие: Получение списка оценок (ответ на GetMarkGrade)", OperationId = "ReceiveMarks")]
         public async Task GetMarkGrade(GetClassDateRequest request)
         {
+            //string groupName = $"{request.GroupId}_{request.DisciplineId}_mark";
+            //await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
             var marks = await _classService.GetMarksByWorksAsync(request);
             await Clients.Caller.SendAsync("ReceiveMarks", marks);
         }
 
         [Channel("hubs/grade/GetPresenceGrade")]
+        [Authorize(Policy = "ViewOnly")]
         [PublishOperation(typeof(GetClassDateRequest), Summary = "Запросить данные о посещаемости", OperationId = nameof(GetPresenceGrade))]
         [SubscribeOperation(typeof(IEnumerable<FullGradePresenceResponse>), Summary = "Событие: Получение данных о посещаемости (ответ на GetPresenceGrade)", OperationId = "ReceivePresences")]
         public async Task GetPresenceGrade(GetClassDateRequest request)
         {
+            //string groupName = $"{request.GroupId}_{request.DisciplineId}_pres";
+            //await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
             var classDates = await _classService.GetPresenceByScheduleAsync(request);
             await Clients.Caller.SendAsync("ReceivePresences", classDates);
         }
 
         [Channel("hubs/grade/UpdateMarkGrade")]
+        [Authorize(Policy = "Edit")]
         [PublishOperation(typeof(UpdateMarkGradeRequest), Summary = "Обновить или создать оценку", OperationId = nameof(UpdateMarkGrade))]
         [SubscribeOperation(typeof(FullGradeMarkResponse), Summary = "Событие: Оценка обновлена (рассылается всем)", OperationId = "UpdatedMark")]
         public async Task UpdateMarkGrade(UpdateMarkGradeRequest request)
         {
-            var existing = await _dbContext.Marks
-                .FirstOrDefaultAsync(m => m.StudentId == request.StudentId && m.WorkId == request.WorkId);
-
-            if (existing != null)
-            {
-                existing.Value = request.Value;
-                existing.Date = request.Date;
-                existing.IsOverdue = request.IsOverdue;
-            }
-            else
-            {
-                await _dbContext.Marks.AddAsync(new Mark
-                {
-                    StudentId = request.StudentId,
-                    WorkId = request.WorkId,
-                    Value = request.Value,
-                    Date = request.Date,
-                    IsOverdue = request.IsOverdue
-                });
-            }
-
-            await _dbContext.SaveChangesAsync();
-
-            await Clients.All.SendAsync("UpdatedMark", new FullGradeMarkResponse
-            {
-                StudentId = request.StudentId,
-                Marks = [new GradeMarkResponse
-                {
-                    WorkId = request.WorkId,
-                    Value = request.Value,
-                }]
-            });
+            var response = await _markService.UpdateOrCreateMarkAsync(request);
+            await Clients.All.SendAsync("UpdatedMark", response);
         }
 
         [Channel("hubs/grade/UpdatePresenceGrade")]
+        [Authorize(Policy = "Edit")]
         [PublishOperation(typeof(UpdatePresenceGradeRequest), Summary = "Обновить или создать запись о посещаемости", OperationId = nameof(UpdatePresenceGrade))]
         [SubscribeOperation(typeof(FullGradePresenceResponse), Summary = "Событие: Посещаемость обновлена (рассылается всем)", OperationId = "UpdatedPresence")]
-        public async Task UpdatePresenceGrade(UpdatePresenceGradeRequest request)
+        public async Task UpdatePresenceGrade(int classId, UpdatePresenceGradeRequest request)
         {
-
-            var presence = await _dbContext.Presences
-                .FirstOrDefaultAsync(p => p.DisciplineId == request.DisciplineId &&
-                                         p.StudentId == request.StudentId &&
-                                         p.Date == request.Date);
-
-            if (presence != null)
-            {
-                presence.IsPresent = request.IsPresent;
-            }
-            else
-            {
-                presence = new Presence
-                {
-                    DisciplineId = request.DisciplineId,
-                    StudentId = request.StudentId,
-                    Date = request.Date,
-                    IsPresent = request.IsPresent
-                };
-                await _dbContext.Presences.AddAsync(presence);
-            }
-            var response = new FullGradePresenceResponse {
-                StudentId = request.StudentId,
-                Presences = [new GradePresenceResponse { 
-                    ClassId = request.ClassId, 
-                    IsPresent = request.IsPresent, 
-                    Date = request.Date 
-                }] 
-            };
-            await _dbContext.SaveChangesAsync();
+            var response = await _presenceService.UpdateOrCreatePresenceAsync(classId, request);
             await Clients.All.SendAsync("UpdatedPresence", response);
         }
     }

@@ -44,7 +44,7 @@ namespace BgutuGrades
             builder.Services.AddAuthentication(ApiKeyDefaults.AuthenticationScheme)
                 .AddApiKeyInHeaderOrQueryParams<ApiKeyProvider>(options =>
                 {
-                    options.KeyName = "Key";
+                    options.KeyName = "key";
                     options.Realm = "Student Grades API";
                     options.SuppressWWWAuthenticateHeader = false;
                     options.IgnoreAuthenticationIfAllowAnonymous = true;
@@ -61,7 +61,7 @@ namespace BgutuGrades
                 };
             });
             builder.Services.AddAuthorizationBuilder()
-                .AddPolicy("ViewOnly", policy => policy.RequireRole("STUDENT"))
+                .AddPolicy("ViewOnly", policy => policy.RequireRole("STUDENT", "TEACHER", "ADMIN"))
                 .AddPolicy("Edit", policy => policy.RequireRole("TEACHER", "ADMIN"))
                 .AddPolicy("Admin", policy => policy.RequireRole("ADMIN"));
             builder.Services.AddControllers()
@@ -86,13 +86,10 @@ namespace BgutuGrades
             app.UseSwagger();
             app.MapSwagger();
             app.MapAsyncApiDocuments();
-            
-            //app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseCors();
             app.MapControllers();
-            app.MapHub<MarkHub>("/hubs/mark");
             app.MapHub<GradeHub>("/hubs/grade");
 
             app.MapScalarApiReference("", options =>
