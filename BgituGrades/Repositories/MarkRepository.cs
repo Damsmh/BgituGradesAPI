@@ -13,22 +13,24 @@ namespace BgituGrades.Repositories
         Task<bool> DeleteMarkByStudentAndWorkAsync(int studentId, int workId);
         Task<Mark?> GetMarkByStudentAndWorkAsync(int studentId, int workId);
         Task DeleteAllAsync();
+        Task<double> GetAverageMarkByStudentAndDisciplineAsync(int studentId, int disciplineId);
     }
 
-    public class MarkRepository(AppDbContext dbContext) : IMarkRepository
+    public class MarkRepository(IDbContextFactory<AppDbContext> contextFactory) : IMarkRepository
     {
-        private readonly AppDbContext _dbContext = dbContext;
 
         public async Task<Mark> CreateMarkAsync(Mark entity)
         {
-            await _dbContext.Marks.AddAsync(entity);
-            await _dbContext.SaveChangesAsync();
+            using var context = await contextFactory.CreateDbContextAsync();
+            await context.Marks.AddAsync(entity);
+            await context.SaveChangesAsync();
             return entity;
         }
 
         public async Task<IEnumerable<Mark>> GetAllMarksAsync()
         {
-            var entities = await _dbContext.Marks
+            using var context = await contextFactory.CreateDbContextAsync();
+            var entities = await context.Marks
                 .AsNoTracking()
                 .ToListAsync();
             return entities;
@@ -36,7 +38,8 @@ namespace BgituGrades.Repositories
 
         public async Task<IEnumerable<Mark>> GetMarksByDisciplineAndGroupAsync(int disciplineId, int groupId)
         {
-            var entities = await _dbContext.Marks
+            using var context = await contextFactory.CreateDbContextAsync();
+            var entities = await context.Marks
                 .Where(m => m.Work.DisciplineId == disciplineId &&
                            m.Student.GroupId == groupId)
                 .AsNoTracking()
@@ -48,30 +51,50 @@ namespace BgituGrades.Repositories
 
         public async Task<bool> UpdateMarkAsync(Mark entity)
         {
-            _dbContext.Update(entity);
-            await _dbContext.SaveChangesAsync();
+            using var context = await contextFactory.CreateDbContextAsync();
+            context.Update(entity);
+            await context.SaveChangesAsync();
             return true;
         }
 
         public async Task<bool> DeleteMarkByStudentAndWorkAsync(int studentId, int workId)
         {
-            var entity = await _dbContext.Marks
+            using var context = await contextFactory.CreateDbContextAsync();
+            var entity = await context.Marks
                 .FirstOrDefaultAsync(m => m.StudentId == studentId && m.WorkId == workId);
-            _dbContext.Marks.Remove(entity);
-            await _dbContext.SaveChangesAsync();
+            context.Marks.Remove(entity);
+            await context.SaveChangesAsync();
             return true;
         }
 
         public async Task DeleteAllAsync()
         {
-            await _dbContext.Marks.ExecuteDeleteAsync();
+            using var context = await contextFactory.CreateDbContextAsync();
+            await context.Marks.ExecuteDeleteAsync();
         }
 
         public async Task<Mark?> GetMarkByStudentAndWorkAsync(int studentId, int workId)
         {
-            return await _dbContext.Marks
+            using var context = await contextFactory.CreateDbContextAsync();
+            return await context.Marks
                 .AsNoTracking()
                 .FirstOrDefaultAsync(m => m.StudentId == studentId && m.WorkId == workId);
+        }
+
+        public async Task<double> GetAverageMarkByStudentAndDisciplineAsync(int studentId, int disciplineId)
+        {
+            using var context = await contextFactory.CreateDbContextAsync();
+            var marks = await context.Marks
+                .Where(m => m.StudentId == studentId && m.Work.DisciplineId == disciplineId)
+                .Select(m => m.Value)
+                .ToListAsync();
+
+            var validMarks = marks
+                .Where(m => double.TryParse(m, out _))
+                .Select(double.Parse)
+                .ToList();
+
+            return validMarks.Count != 0 ? validMarks.Average() : 0;
         }
     }
 

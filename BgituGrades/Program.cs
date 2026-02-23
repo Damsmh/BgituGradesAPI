@@ -7,6 +7,7 @@ using BgituGrades.Hubs;
 using BgituGrades.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
+using OfficeOpenXml;
 using Saunter;
 using Saunter.AsyncApiSchema.v2;
 using System.Text.Json.Serialization;
@@ -17,11 +18,15 @@ namespace BgituGrades
     {
         public static void Main(string[] args)
         {
+            ExcelPackage.License.SetNonCommercialOrganization("BGITU");
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseNpgsql(
                     builder.Configuration.GetConnectionString("PostgreSQL")));
+            builder.Services.AddDbContextFactory<AppDbContext>(options =>
+                options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSQL")),
+                    ServiceLifetime.Scoped);
 
             builder.Services.AddCors(options =>
             {
@@ -111,6 +116,8 @@ namespace BgituGrades
                 }
             });
 
+            builder.Services.AddMemoryCache();
+
             var app = builder.Build();
 
             using (var scope = app.Services.CreateScope())
@@ -141,6 +148,7 @@ namespace BgituGrades
             app.UseCors();
             app.MapControllers();
             app.MapHub<GradeHub>("/hubs/grade");
+            app.MapHub<ReportHub>("/hubs/report");
 
             app.Run();
         }

@@ -13,56 +13,69 @@ namespace BgituGrades.Repositories
         Task<bool> UpdateDisciplineAsync(Discipline entity);
         Task<bool> DeleteDisciplineAsync(int id);
         Task DeleteAllAsync();
+        Task<IEnumerable<Discipline>> GetDisciplinesByIdsAsync(int[] disciplineIds);
     }
 
-    public class DisciplineRepository(AppDbContext dbContext) : IDisciplineRepository
+    public class DisciplineRepository(IDbContextFactory<AppDbContext> contextFactory) : IDisciplineRepository
     {
-        private readonly AppDbContext _dbContext = dbContext;
         public async Task<Discipline> CreateDisciplineAsync(Discipline entity)
         {
-            await _dbContext.Disciplines.AddAsync(entity);
-            await _dbContext.SaveChangesAsync();  
+            using var context = await contextFactory.CreateDbContextAsync();
+            await context.Disciplines.AddAsync(entity);
+            await context.SaveChangesAsync();  
             return entity;
         }
 
         public async Task DeleteAllAsync()
         {
-            await _dbContext.Disciplines.ExecuteDeleteAsync();
+            using var context = await contextFactory.CreateDbContextAsync();
+            await context.Disciplines.ExecuteDeleteAsync();
         }
 
         public async Task<bool> DeleteDisciplineAsync(int id)
         {
+            using var context = await contextFactory.CreateDbContextAsync();
             var entity = await GetByIdAsync(id);
-            _dbContext.Disciplines.Remove(entity);
-            await _dbContext.SaveChangesAsync();
+            context.Disciplines.Remove(entity);
+            await context.SaveChangesAsync();
             return true;
         }
 
         public async Task<IEnumerable<Discipline>> GetAllAsync()
         {
-            var entities = await _dbContext.Disciplines.AsNoTracking().ToListAsync();
-            return entities;
+            using var context = await contextFactory.CreateDbContextAsync();
+            return await context.Disciplines.AsNoTracking().ToListAsync();
         }
 
         public async Task<IEnumerable<Discipline?>> GetByGroupIdAsync(int groupId)
         {
-            var entities = await _dbContext.Disciplines
+            using var context = await contextFactory.CreateDbContextAsync();
+            return await context.Disciplines
                 .Where(d => d.Classes!.Any(c => c.GroupId == groupId))
                 .AsNoTracking()
                 .ToListAsync();
-            return entities;
         }
 
         public async Task<Discipline?> GetByIdAsync(int id)
         {
-            var entity = await _dbContext.Disciplines.FindAsync(id);
-            return entity;
+            using var context = await contextFactory.CreateDbContextAsync();
+            return await context.Disciplines.FindAsync(id);
+        }
+
+        public async Task<IEnumerable<Discipline>> GetDisciplinesByIdsAsync(int[] disciplineIds)
+        {
+            using var context = await contextFactory.CreateDbContextAsync();
+            return await context.Disciplines
+                .AsNoTracking()
+                .Where(d => disciplineIds.Contains(d.Id))
+                .ToListAsync();
         }
 
         public async Task<bool> UpdateDisciplineAsync(Discipline entity)
         {
-            _dbContext.Disciplines.Update(entity);
-            await _dbContext.SaveChangesAsync();
+            using var context = await contextFactory.CreateDbContextAsync();
+            context.Disciplines.Update(entity);
+            await context.SaveChangesAsync();
             return true;
         }
     }

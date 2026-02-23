@@ -1,5 +1,4 @@
-﻿using BgituGrades.Data;
-using BgituGrades.Models.Class;
+﻿using BgituGrades.Models.Class;
 using BgituGrades.Models.Mark;
 using BgituGrades.Models.Presence;
 using BgituGrades.Services;
@@ -10,7 +9,7 @@ using Saunter.Attributes;
 namespace BgituGrades.Hubs
 {
     [AsyncApi]
-    public class GradeHub(IClassService classService, IPresenceService presenceService, IMarkService markService, AppDbContext dbContext) : Hub
+    public class GradeHub(IClassService classService, IPresenceService presenceService, IMarkService markService) : Hub
     {
         private readonly IClassService _classService = classService;
         private readonly IPresenceService _presenceService = presenceService;
@@ -22,8 +21,6 @@ namespace BgituGrades.Hubs
         [SubscribeOperation(typeof(IEnumerable<FullGradeMarkResponse>), Summary = "Событие: Получение списка оценок (ответ на GetMarkGrade)", OperationId = "ReceiveMarks")]
         public async Task GetMarkGrade(GetClassDateRequest request)
         {
-            //string groupName = $"{request.GroupId}_{request.DisciplineId}_mark";
-            //await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
             var marks = await _classService.GetMarksByWorksAsync(request);
             await Clients.Caller.SendAsync("ReceiveMarks", marks);
         }
@@ -34,8 +31,6 @@ namespace BgituGrades.Hubs
         [SubscribeOperation(typeof(IEnumerable<FullGradePresenceResponse>), Summary = "Событие: Получение данных о посещаемости (ответ на GetPresenceGrade)", OperationId = "ReceivePresences")]
         public async Task GetPresenceGrade(GetClassDateRequest request)
         {
-            //string groupName = $"{request.GroupId}_{request.DisciplineId}_pres";
-            //await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
             var classDates = await _classService.GetPresenceByScheduleAsync(request);
             await Clients.Caller.SendAsync("ReceivePresences", classDates);
         }

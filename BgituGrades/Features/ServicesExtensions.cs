@@ -33,6 +33,7 @@ namespace BgituGrades.Features
             services.AddScoped<IMigrationService, MigrationsService>();
             services.AddScoped<IApiKeyProvider, ApiKeyProvider>();
             services.AddScoped<IKeyService, KeyService>();
+            services.AddScoped<IReportService, ReportService>();
             return services;
         }
     }

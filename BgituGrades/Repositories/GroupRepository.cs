@@ -14,55 +14,71 @@ namespace BgituGrades.Repositories
         Task<bool> UpdateGroupAsync(Group entity);
         Task<bool> DeleteGroupAsync(int id);
         Task DeleteAllAsync();
+        Task<IEnumerable<Group>> GetGroupsByIdsAsync(int[] groupIds);
     }
 
-    public class GroupRepository(AppDbContext dbContext) : IGroupRepository
+    public class GroupRepository(IDbContextFactory<AppDbContext> contextFactory) : IGroupRepository
     {
-        private readonly AppDbContext _dbContext = dbContext;
         public async Task<Group> CreateGroupAsync(Group entity)
         {
-            await _dbContext.Groups.AddAsync(entity);
-            await _dbContext.SaveChangesAsync();
+            using var context = await contextFactory.CreateDbContextAsync();
+            await context.Groups.AddAsync(entity);
+            await context.SaveChangesAsync();
             return entity;
         }
 
         public async Task DeleteAllAsync()
         {
-            await _dbContext.Groups.ExecuteDeleteAsync();
+            using var context = await contextFactory.CreateDbContextAsync();
+            await context.Groups.ExecuteDeleteAsync();
         }
 
         public async Task<bool> DeleteGroupAsync(int id)
         {
+            using var context = await contextFactory.CreateDbContextAsync();
             var entity = await GetByIdAsync(id);
-            _dbContext.Groups.Remove(entity);
+            context.Groups.Remove(entity);
             return true;
         }
 
         public async Task<IEnumerable<Group>> GetAllAsync()
         {
-            var groups = await _dbContext.Groups.AsNoTracking().ToListAsync();
+            using var context = await contextFactory.CreateDbContextAsync();
+            var groups = await context.Groups.AsNoTracking().ToListAsync();
             return groups;
         }
 
         public async Task<Group?> GetByIdAsync(int id)
         {
-            var entity = await _dbContext.Groups.FindAsync(id);
+            using var context = await contextFactory.CreateDbContextAsync();
+            var entity = await context.Groups.FindAsync(id);
             return entity;
         }
 
         public async Task<IEnumerable<Group>> GetGroupsByDisciplineAsync(int disciplineId)
         {
-            var entities = await _dbContext.Groups
+            using var context = await contextFactory.CreateDbContextAsync();
+            var entities = await context.Groups
                                 .Where(g => g.Classes.Any(c => c.DisciplineId == disciplineId))
                                 .AsNoTracking()
                                 .ToListAsync();
             return entities;
         }
 
+        public async Task<IEnumerable<Group>> GetGroupsByIdsAsync(int[] groupIds)
+        {
+            using var context = await contextFactory.CreateDbContextAsync();
+            return await context.Groups
+                .AsNoTracking()
+                .Where(g => groupIds.Contains(g.Id))
+                .ToListAsync();
+        }
+
         public async Task<bool> UpdateGroupAsync(Group entity)
         {
-            _dbContext.Groups.Update(entity);
-            await _dbContext.SaveChangesAsync();
+            using var context = await contextFactory.CreateDbContextAsync();
+            context.Groups.Update(entity);
+            await context.SaveChangesAsync();
             return true;
         }
     }
