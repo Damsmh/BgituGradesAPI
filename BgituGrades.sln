@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.3.11512.155 d18.3
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BgituGrades", "BgituGrades\BgituGrades.csproj", "{0E5953C9-D73E-452F-B4D9-B245E7C51988}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0E5953C9-D73E-452F-B4D9-B245E7C51988}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E5953C9-D73E-452F-B4D9-B245E7C51988}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E5953C9-D73E-452F-B4D9-B245E7C51988}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E5953C9-D73E-452F-B4D9-B245E7C51988}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3F05D10B-44BC-47A7-9728-16D21E2FA2BE}
+	EndGlobalSection
+EndGlobal

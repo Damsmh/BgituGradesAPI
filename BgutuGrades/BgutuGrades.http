@@ -1,6 +1,0 @@
-@BgutuGrades_HostAddress = http://localhost:5246
-
-GET {{BgutuGrades_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
