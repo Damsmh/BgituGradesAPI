@@ -174,7 +174,7 @@ namespace BgituGrades.Services
             {
                 if (disciplines.Any() && groups.Any())
                 {
-                    var allPresences = await _presenceRepository.GetPresencesByDisciplinesAndGroupsAsync(groupIds, disciplineIds);
+                    var allPresences = await _presenceRepository.GetPresencesByDisciplinesAndGroupsAsync(disciplineIds, groupIds);
 
                     presenceDict = allPresences
                         .GroupBy(m => new { m.StudentId, m.DisciplineId })
