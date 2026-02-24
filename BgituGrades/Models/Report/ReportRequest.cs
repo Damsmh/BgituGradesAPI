@@ -9,6 +9,6 @@ namespace BgituGrades.Models.Report
         public int[]? DisciplineIds { get; set; }
         public int[]? StudentIds { get; set; }
         [Required]
-        public ReportType Type { get; set; }
+        public ReportType ReportType { get; set; }
     }
 }
