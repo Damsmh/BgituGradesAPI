@@ -15,6 +15,7 @@ namespace BgituGrades.Controllers
 
         [HttpGet()]
         [ApiVersion("2.0")]
+        [Authorize(Policy = "ViewOnly")]
         [ProducesResponseType(typeof(IEnumerable<StudentResponse>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<StudentResponse>>> GetStudents([FromQuery] GetStudentsByGroupRequest request)
         {
@@ -23,8 +24,8 @@ namespace BgituGrades.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = "Edit")]
         [ApiVersion("2.0")]
+        [Authorize(Policy = "Edit")]
         [ProducesResponseType(typeof(StudentResponse), StatusCodes.Status201Created)]
         public async Task<ActionResult<StudentResponse>> CreateStudent([FromBody] CreateStudentRequest request)
         {
@@ -47,6 +48,7 @@ namespace BgituGrades.Controllers
 
         [HttpPut]
         [ApiVersion("2.0")]
+        [Authorize(Policy = "Edit")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UpdateStudent([FromBody] UpdateStudentRequest request)

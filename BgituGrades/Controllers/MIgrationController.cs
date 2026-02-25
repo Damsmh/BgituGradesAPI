@@ -1,5 +1,6 @@
 ﻿using Asp.Versioning;
 using BgituGrades.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 
@@ -7,6 +8,7 @@ namespace BgituGrades.Controllers
 {
     [Route("api/clearDb")]
     [ApiVersion("2.0")]
+    [Authorize(Policy = "Admin")]
     [ApiController]
     public class MIgrationController(IMigrationService migrationService) : ControllerBase
     {

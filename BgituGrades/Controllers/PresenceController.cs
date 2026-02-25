@@ -11,7 +11,7 @@ using System.ComponentModel;
 
 namespace BgituGrades.Controllers
 {
-    [ApiVersion("2.0")]
+    [ApiVersion("2.0", Deprecated = true)]
     [Description("Используйте SignalR")]
     [Route("api/presence")]
     [ApiController]
@@ -83,7 +83,6 @@ namespace BgituGrades.Controllers
                     IsPresent = presence.IsPresent
                 });
             }
-            //var response = new GradePresenceResponse { ClassId = request.ClassId, IsPresent = presence.IsPresent, Date = presence.Date };  для хаба
             return NoContent();
         }
 

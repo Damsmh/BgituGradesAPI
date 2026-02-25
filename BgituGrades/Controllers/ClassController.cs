@@ -2,6 +2,7 @@
 using BgituGrades.Models.Class;
 using BgituGrades.Models.Student;
 using BgituGrades.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BgituGrades.Controllers
@@ -47,6 +48,7 @@ namespace BgituGrades.Controllers
 
         [HttpPost]
         [ApiVersion("2.0")]
+        [Authorize(Policy = "Admin")]
         [ProducesResponseType(typeof(ClassResponse), StatusCodes.Status201Created)]
         public async Task<ActionResult<ClassResponse>> CreateClass([FromBody] CreateClassRequest request)
         {
@@ -69,6 +71,7 @@ namespace BgituGrades.Controllers
 
         [HttpDelete]
         [ApiVersion("2.0")]
+        [Authorize(Policy = "Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteClass([FromQuery] int id)

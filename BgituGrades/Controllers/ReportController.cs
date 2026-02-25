@@ -1,5 +1,6 @@
 ﻿using Asp.Versioning;
 using BgituGrades.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -18,6 +19,7 @@ namespace BgituGrades.Controllers
 
         [HttpGet("{reportId}/download")]
         [ApiVersion("2.0")]
+        [Authorize(Policy = "Edit")]
         public async Task<IActionResult> DownloadReport(Guid reportId)
         {
             if (!_cache.TryGetValue($"report_{reportId}", out byte[]? excelBytes))

@@ -17,6 +17,7 @@ namespace BgituGrades.Controllers
 
         [HttpGet]
         [ApiVersion("2.0")]
+        [Authorize(Policy = "Admin")]
         [ProducesResponseType(typeof(IEnumerable<KeyResponse>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<KeyResponse>>> GetKeys()
         {
@@ -26,6 +27,7 @@ namespace BgituGrades.Controllers
 
         [HttpPost]
         [ApiVersion("2.0")]
+        [Authorize(Policy = "Admin")]
         [ProducesResponseType(typeof(KeyResponse), StatusCodes.Status201Created)]
         public async Task<ActionResult<KeyResponse>> CreateKey(CreateKeyRequest request)
         {
@@ -44,8 +46,8 @@ namespace BgituGrades.Controllers
         }
 
         [HttpGet("shared")]
-        [Authorize(Policy = "Edit")]
         [ApiVersion("2.0")]
+        [Authorize(Policy = "Edit")]
         [ProducesResponseType(typeof(SharedKeyResponse), StatusCodes.Status200OK)]
         public async Task<ActionResult<KeyResponse>> CreateSharedKey(int groupId, int disciplineId)
         {
@@ -58,8 +60,8 @@ namespace BgituGrades.Controllers
         }
 
         [HttpDelete]
-        [Authorize(Policy = "Admin")]
         [ApiVersion("2.0")]
+        [Authorize(Policy = "Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteKey([FromQuery] DeleteKeyRequest request)

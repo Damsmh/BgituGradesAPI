@@ -2,6 +2,7 @@
 using BgituGrades.Models.Discipline;
 using BgituGrades.Models.Student;
 using BgituGrades.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BgituGrades.Controllers
@@ -14,6 +15,7 @@ namespace BgituGrades.Controllers
 
         [HttpGet("all")]
         [ApiVersion("2.0")]
+        [Authorize(Policy = "ViewOnly")]
         [ProducesResponseType(typeof(IEnumerable<DisciplineResponse>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<DisciplineResponse>>> GetDisciplines()
         {
@@ -23,6 +25,7 @@ namespace BgituGrades.Controllers
 
         [HttpGet]
         [ApiVersion("2.0")]
+        [Authorize(Policy = "ViewOnly")]
         [ProducesResponseType(typeof(IEnumerable<DisciplineResponse>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<DisciplineResponse>>> GetDisciplinesByGroupId([FromQuery] int groupId)
         {
@@ -32,6 +35,7 @@ namespace BgituGrades.Controllers
 
         [HttpPost]
         [ApiVersion("2.0")]
+        [Authorize(Policy = "Admin")]
         [ProducesResponseType(typeof(DisciplineResponse), StatusCodes.Status201Created)]
         public async Task<ActionResult<DisciplineResponse>> CreateDiscipline([FromBody] CreateDisciplineRequest request)
         {
@@ -68,6 +72,7 @@ namespace BgituGrades.Controllers
 
         [HttpDelete]
         [ApiVersion("2.0")]
+        [Authorize(Policy = "Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteDiscipline([FromQuery] DeleteDisciplineRequest request)

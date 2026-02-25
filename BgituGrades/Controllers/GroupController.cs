@@ -2,6 +2,7 @@
 using BgituGrades.Models.Group;
 using BgituGrades.Models.Student;
 using BgituGrades.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BgituGrades.Controllers
@@ -14,6 +15,7 @@ namespace BgituGrades.Controllers
 
         [HttpGet]
         [ApiVersion("2.0")]
+        [Authorize(Policy = "ViewOnly")]
         [ProducesResponseType(typeof(IEnumerable<GroupResponse>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<GroupResponse>>> GetGroups(
             [FromQuery] GetGroupsByDisciplineRequest request)
@@ -24,6 +26,7 @@ namespace BgituGrades.Controllers
 
         [HttpGet("all")]
         [ApiVersion("2.0")]
+        [Authorize(Policy = "ViewOnly")]
         [ProducesResponseType(typeof(IEnumerable<GroupResponse>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<GroupResponse>>> GetAllGroups()
         {
@@ -33,6 +36,7 @@ namespace BgituGrades.Controllers
 
         [HttpPost]
         [ApiVersion("2.0")]
+        [Authorize(Policy = "Admin")]
         [ProducesResponseType(typeof(GroupResponse), StatusCodes.Status201Created)]
         public async Task<ActionResult<GroupResponse>> CreateGroup([FromBody] CreateGroupRequest request)
         {
@@ -69,6 +73,7 @@ namespace BgituGrades.Controllers
 
         [HttpDelete]
         [ApiVersion("2.0")]
+        [Authorize(Policy = "Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteGroup([FromQuery] DeleteGroupRequest request)
