@@ -154,9 +154,10 @@ namespace BgituGrades
                         };
 
                         await keyRepo.CreateKeyAsync(adminKey);
+                        Console.WriteLine($"##################################");
+                        Console.WriteLine($"### INITIAL KEY: {adminKeyStr} ###");
+                        Console.WriteLine($"##################################");
 
-                        Console.WriteLine($"#INITIAL KEY: {adminKeyStr}#");
-                        Console.WriteLine($"#ќЅя«ј“≈Ћ№Ќќ создайте новый ключ и удалите начальный#");
                     }
                 }
                 catch (Exception ex)
