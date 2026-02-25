@@ -13,6 +13,8 @@ namespace BgituGrades.Services
         Task<ClassResponse> CreateClassAsync(CreateClassRequest request);
         Task<ClassResponse?> GetClassByIdAsync(int id);
         Task<bool> DeleteClassAsync(int id);
+        Task<IEnumerable<ClassDateResponse>> GenerateScheduleDatesAsync(int groupId, int disciplineId,
+            DateOnly? startDateOverride = null, DateOnly? endDateOverride = null);
     }
     public class ClassService(IClassRepository classRepository, IGroupRepository groupRepository,
         IStudentRepository studentRepository, IWorkRepository workRepository, IMapper mapper) : IClassService
@@ -35,19 +37,19 @@ namespace BgituGrades.Services
             var group = await _groupRepository.GetByIdAsync(request.GroupId);
             if (group == null) return [];
 
-            var classDates = await GenerateScheduleDatesAsync(request);
+            var classDates = await GenerateScheduleDatesAsync(request.GroupId, request.DisciplineId);
             return classDates;
         }
 
 
-        private async Task<IEnumerable<ClassDateResponse>> GenerateScheduleDatesAsync(GetClassDateRequest request,
+        public async Task<IEnumerable<ClassDateResponse>> GenerateScheduleDatesAsync(int groupId, int disciplineId,
             DateOnly? startDateOverride = null, DateOnly? endDateOverride = null)
         {
-            var group = await _groupRepository.GetByIdAsync(request.GroupId);
+            var group = await _groupRepository.GetByIdAsync(groupId);
             if (group == null) return [];
 
             var classes = await _classRepository.GetClassesByDisciplineAndGroupAsync(
-                request.DisciplineId, request.GroupId);
+                disciplineId, groupId);
 
             var startDate = startDateOverride ?? group.StudyStartDate;
             var endDate = endDateOverride ?? group.StudyEndDate;
@@ -107,7 +109,7 @@ namespace BgituGrades.Services
 
         public async Task<IEnumerable<FullGradePresenceResponse>> GetPresenceByScheduleAsync(GetClassDateRequest request)
         {
-            var scheduleDates = await GenerateScheduleDatesAsync(request);
+            var scheduleDates = await GenerateScheduleDatesAsync(request.GroupId, request.DisciplineId);
 
             var students = await _studentRepository.GetPresenseGrade(scheduleDates, request.GroupId, request.DisciplineId);
             return students;
