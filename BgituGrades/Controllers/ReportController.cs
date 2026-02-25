@@ -2,7 +2,7 @@
 using BgituGrades.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace BgituGrades.Controllers
 {
@@ -10,10 +10,10 @@ namespace BgituGrades.Controllers
     [Route("api/report")]
     public class ReportController(
         IReportService reportService,
-        IMemoryCache cache,
+        IDistributedCache cache,
         ILogger<ReportController> logger) : ControllerBase
     {
-        private readonly IMemoryCache _cache = cache;
+        private readonly IDistributedCache _cache = cache;
         private readonly ILogger<ReportController> _logger = logger;
 
 
@@ -22,13 +22,15 @@ namespace BgituGrades.Controllers
         [Authorize(Policy = "Edit")]
         public async Task<IActionResult> DownloadReport(Guid reportId)
         {
-            if (!_cache.TryGetValue($"report_{reportId}", out byte[]? excelBytes))
-            {
-                _logger.LogWarning("Отчет {reportId} не найден в кэше", reportId);
-                return NotFound("Отчет не найден");
-            }
+            byte[] excelBytes = await _cache.GetAsync($"report_{reportId}");
 
+            if (excelBytes == null)
+            {
+                return NotFound("Отчет не найден или срок его хранения истек.");
+            }
+            
             var fileName = $"отчет_{reportId:N}.xlsx";
+            
 
             return File(excelBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
         }

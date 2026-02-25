@@ -3,7 +3,7 @@ using BgituGrades.Hubs;
 using BgituGrades.Models.Report;
 using BgituGrades.Repositories;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Caching.Distributed;
 using OfficeOpenXml;
 
 namespace BgituGrades.Services
@@ -12,23 +12,26 @@ namespace BgituGrades.Services
     {
         Task<Guid> GenerateReportAsync(ReportRequest request, string connectionId);
     }
+
     public class ReportService(
         IHubContext<ReportHub> hubContext,
-        IMemoryCache cache,
+        IDistributedCache cache,
         IServiceScopeFactory scopeFactory) : IReportService
     {
         private readonly IHubContext<ReportHub> _hubContext = hubContext;
-        private readonly IMemoryCache _cache = cache;
+        private readonly IDistributedCache _cache = cache;
         private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
 
         public async Task<Guid> GenerateReportAsync(ReportRequest request, string connectionId)
         {
             var reportId = Guid.NewGuid();
             await _hubContext.Groups.AddToGroupAsync(connectionId, reportId.ToString());
-            _ =  Task.Run(async () => await GenerateWithProgress(reportId, request));
+
+            _ = Task.Run(async () => await GenerateWithProgress(reportId, request));
+
             return reportId;
-        }    
-        
+        }
+
         private async Task GenerateWithProgress(Guid reportId, ReportRequest request)
         {
             using var scope = _scopeFactory.CreateScope();
@@ -39,55 +42,49 @@ namespace BgituGrades.Services
             var markRepo = scope.ServiceProvider.GetRequiredService<IMarkRepository>();
             var presenceRepo = scope.ServiceProvider.GetRequiredService<IPresenceRepository>();
 
-            var cacheEntryOptions = new MemoryCacheEntryOptions()
-                .SetSlidingExpiration(TimeSpan.FromHours(1))
+            var cacheOptions = new DistributedCacheEntryOptions()
                 .SetAbsoluteExpiration(TimeSpan.FromHours(24));
 
-            await _hubContext.Clients.Group(reportId.ToString())
-                .SendAsync("ReportProgress", reportId.ToString(), 10, "Загружаем группы...");
-
-            var groups = await groupRepo.GetGroupsByIdsAsync(request.GroupIds);
-            var disciplines = await disciplineRepo.GetDisciplinesByIdsAsync(request.DisciplineIds);
-            var students = await studentRepo.GetStudentsByIdsAsync(request.StudentIds);
-
-            if (!groups.Any() || !disciplines.Any())
-            {
-                throw new Exception("Нет данных для формирования отчета (проверьте ID групп и дисциплин)");
-            }
-
-            await _hubContext.Clients.Group(reportId.ToString())
-                .SendAsync("ReportProgress", reportId.ToString(), 40, "Формируем Excel...");
-
-            byte[] excelBytes;
             try
             {
+                await _hubContext.Clients.Group(reportId.ToString())
+                    .SendAsync("ReportProgress", 10, "Загрузка данных...");
+
+                var groups = await groupRepo.GetGroupsByIdsAsync(request.GroupIds);
+                var disciplines = await disciplineRepo.GetDisciplinesByIdsAsync(request.DisciplineIds);
+                var students = await studentRepo.GetStudentsByIdsAsync(request.StudentIds);
+
+                if (!groups.Any() || !disciplines.Any())
+                {
+                    throw new Exception("Нет данных для формирования отчета");
+                }
+
+                await _hubContext.Clients.Group(reportId.ToString())
+                    .SendAsync("ReportProgress", 40, "Генерация Excel файла...");
+
+                byte[] excelBytes;
                 if (request.ReportType == ReportType.MARK)
                 {
                     excelBytes = await GenerateMarksExcelAsync(markRepo, groups, disciplines, students);
                 }
-                else if (request.ReportType == ReportType.PRESENCE)
+                else
                 {
                     excelBytes = await GeneratePresenceExcelAsync(presenceRepo, groups, disciplines, students);
                 }
-                else
-                {
-                    throw new Exception("Invalid report type");
-                }
-            } catch (Exception ex)
+
+                await _hubContext.Clients.Group(reportId.ToString())
+                    .SendAsync("ReportProgress", 80, "Сохранение...");
+
+                await _cache.SetAsync($"report_{reportId}", excelBytes, cacheOptions);
+
+                await _hubContext.Clients.Group(reportId.ToString())
+                    .SendAsync("ReportReady", $"https://maxim.pamagiti.site/api/report/{reportId}/download");
+            }
+            catch (Exception ex)
             {
                 await _hubContext.Clients.Group(reportId.ToString())
                     .SendAsync("Error", ex.Message);
-                return;
             }
-            
-
-            await _hubContext.Clients.Group(reportId.ToString())
-                .SendAsync("ReportProgress", reportId.ToString(), 90, "Сохраняем файл...");
-
-            _cache.Set($"report_{reportId}", excelBytes, cacheEntryOptions);
-
-            await _hubContext.Clients.Group(reportId.ToString())
-                .SendAsync("ReportReady", reportId.ToString(), $"https://maxim.pamagiti.site/api/report/{reportId}/download");
         }
 
         private static async Task<byte[]> GenerateMarksExcelAsync(IMarkRepository _markRepository, IEnumerable<Group> groups, IEnumerable<Discipline> disciplines, IEnumerable<Student> students)
@@ -107,14 +104,14 @@ namespace BgituGrades.Services
                     var allMarks = await _markRepository.GetMarksByDisciplinesAndGroupsAsync(disciplineIds, groupIds);
 
                     markDict = allMarks
-                        .Where(m => m.Work != null && !string.IsNullOrEmpty(m.Value)) // Проверяем, что Work загружен и значение не пустое
+                        .Where(m => m.Work != null && !string.IsNullOrEmpty(m.Value)) 
                         .Select(m => new
                         {
                             m.StudentId,
                             m.Work.DisciplineId,
                             ParsedValue = double.TryParse(m.Value.Replace(',', '.'), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double val) ? val : (double?)null
                         })
-                        .Where(m => m.ParsedValue.HasValue) // Оставляем только те, что успешно распарсились
+                        .Where(m => m.ParsedValue.HasValue)
                         .GroupBy(m => new { m.StudentId, m.DisciplineId })
                         .ToDictionary(
                             g => (g.Key.StudentId, g.Key.DisciplineId),

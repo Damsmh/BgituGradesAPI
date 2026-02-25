@@ -2,8 +2,10 @@ using Asp.Versioning;
 using Asp.Versioning.ApiExplorer;
 using AspNetCore.Authentication.ApiKey;
 using BgituGrades.Data;
+using BgituGrades.Entities;
 using BgituGrades.Features;
 using BgituGrades.Hubs;
+using BgituGrades.Repositories;
 using BgituGrades.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
@@ -16,7 +18,7 @@ namespace BgituGrades
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             ExcelPackage.License.SetNonCommercialOrganization("BGITU");
             var builder = WebApplication.CreateBuilder(args);
@@ -27,6 +29,8 @@ namespace BgituGrades
             builder.Services.AddDbContextFactory<AppDbContext>(options =>
                 options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSQL")),
                     ServiceLifetime.Scoped);
+            var redisConnectionString = builder.Configuration.GetConnectionString("Redis");
+
 
             builder.Services.AddCors(options =>
             {
@@ -43,10 +47,18 @@ namespace BgituGrades
                 .AddRepositories()
                 .AddApplicationServices();
 
-            builder.Services.AddSignalR().AddJsonProtocol(options =>
+            builder.Services.AddSignalR()
+            .AddJsonProtocol(options =>
             {
                 options.PayloadSerializerOptions.Converters.Add(
                     new JsonStringEnumConverter());
+            })
+            .AddStackExchangeRedis(redisConnectionString);
+
+            builder.Services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = redisConnectionString;
+                options.InstanceName = "BgituGrades_";
             });
 
             builder.Services.AddAutoMapper(cfg => { }, typeof(Program).Assembly);
@@ -122,8 +134,36 @@ namespace BgituGrades
 
             using (var scope = app.Services.CreateScope())
             {
-                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                dbContext.Database.Migrate();
+                var services = scope.ServiceProvider;
+                try
+                {
+                    var dbContext = services.GetRequiredService<AppDbContext>();
+                    await dbContext.Database.MigrateAsync();
+
+                    var keyRepo = services.GetRequiredService<IKeyRepository>();
+                    var existingKeys = await keyRepo.GetKeysAsync();
+
+                    if (!existingKeys.Any())
+                    {
+                        var adminKeyStr = Guid.NewGuid().ToString("N");
+                        var adminKey = new ApiKey
+                        {
+                            Key = adminKeyStr,
+                            Role = "ADMIN",
+                            OwnerName = "Initial Admin"
+                        };
+
+                        await keyRepo.CreateKeyAsync(adminKey);
+
+                        Console.WriteLine($"#INITIAL KEY: {adminKeyStr}#");
+                        Console.WriteLine($"#ќЅя«ј“≈Ћ№Ќќ создайте новый ключ и удалите начальный#");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    var logger = services.GetRequiredService<ILogger<Program>>();
+                    logger.LogError(ex, "ќшибка при миграции или создании начального ключа.");
+                }
             }
 
             var provider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
