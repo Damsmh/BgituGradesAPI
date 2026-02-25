@@ -17,8 +17,7 @@ namespace BgituGrades.Controllers
         private readonly AppDbContext _dbContext = dbContext;
 
         [HttpGet]
-        [ApiVersion("1.0")]
-        [Obsolete("deprecated")]
+        [ApiVersion("2.0")]
         [ProducesResponseType(typeof(IEnumerable<MarkResponse>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<MarkResponse>>> GetMarks()
         {
@@ -27,8 +26,7 @@ namespace BgituGrades.Controllers
         }
 
         [HttpPost]
-        [ApiVersion("1.0")]
-        [Obsolete("deprecated")]
+        [ApiVersion("2.0")]
         [ProducesResponseType(typeof(MarkResponse), StatusCodes.Status201Created)]
         public async Task<ActionResult<MarkResponse>> CreateMark([FromBody] CreateMarkRequest request)
         {
@@ -37,8 +35,7 @@ namespace BgituGrades.Controllers
         }
 
         [HttpGet("by_dId_gId")]
-        [ApiVersion("1.0")]
-        [Obsolete("deprecated")]
+        [ApiVersion("2.0")]
         [ProducesResponseType(typeof(MarkResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
         public async Task<ActionResult<MarkResponse>> GetMarkByDisciplineAndGroup([FromQuery] GetMarksByDisciplineAndGroupRequest request)
@@ -50,8 +47,7 @@ namespace BgituGrades.Controllers
         }
 
         [HttpPut]
-        [ApiVersion("1.0")]
-        [Obsolete("deprecated")]
+        [ApiVersion("2.0")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UpdateMark([FromBody] UpdateMarkRequest request)
@@ -64,8 +60,7 @@ namespace BgituGrades.Controllers
         }
 
         [HttpPut("grade")]
-        [ApiVersion("1.0")]
-        [Obsolete("deprecated")]
+        [ApiVersion("2.0")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult<GradeMarkResponse>> UpdateMarkGrade([FromQuery] UpdateMarkGradeRequest request, [FromBody] UpdateMarkRequest mark)
         {
@@ -97,8 +92,7 @@ namespace BgituGrades.Controllers
         }
 
         [HttpDelete]
-        [ApiVersion("1.0")]
-        [Obsolete("deprecated")]
+        [ApiVersion("2.0")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteMark([FromQuery] DeleteMarkByStudentAndWorkRequest request)

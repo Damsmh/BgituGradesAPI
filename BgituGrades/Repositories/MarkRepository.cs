@@ -103,9 +103,8 @@ namespace BgituGrades.Repositories
         {
             using var context = await contextFactory.CreateDbContextAsync();
             var entities = await context.Marks
-                .Where(m => disciplineIds.Contains(m.Work.DisciplineId) &&
-                           groupIds.Contains(m.Student.GroupId))
-                .AsNoTracking()
+                .Include(m => m.Work)
+                .Where(m => disciplineIds.Contains(m.Work.DisciplineId) && groupIds.Contains(m.Student.GroupId))
                 .ToListAsync();
             return entities;
         }

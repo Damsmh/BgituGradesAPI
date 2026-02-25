@@ -106,12 +106,20 @@ namespace BgituGrades.Services
                 if (disciplines.Any() && groups.Any())
                 {
                     var allMarks = await _markRepository.GetMarksByDisciplinesAndGroupsAsync(disciplineIds, groupIds);
+
                     markDict = allMarks
-                        .Where(m => double.TryParse(m.Value, out _))
-                        .GroupBy(m => new { m.StudentId, m.Work.DisciplineId })
+                        .Where(m => m.Work != null && !string.IsNullOrEmpty(m.Value)) // Проверяем, что Work загружен и значение не пустое
+                        .Select(m => new
+                        {
+                            m.StudentId,
+                            m.Work.DisciplineId,
+                            ParsedValue = double.TryParse(m.Value.Replace(',', '.'), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double val) ? val : (double?)null
+                        })
+                        .Where(m => m.ParsedValue.HasValue) // Оставляем только те, что успешно распарсились
+                        .GroupBy(m => new { m.StudentId, m.DisciplineId })
                         .ToDictionary(
                             g => (g.Key.StudentId, g.Key.DisciplineId),
-                            g => g.Average(m => double.Parse(m.Value))
+                            g => g.Average(m => m.ParsedValue.Value)
                         );
                 }
             }
@@ -120,11 +128,12 @@ namespace BgituGrades.Services
                 throw new Exception($"Ошибка при формировании данных успеваемости: {ex.Message}", ex);
             }
 
-            worksheet.Cells[1, 1].Value = "Группа&Студенты";
+            worksheet.Cells[1, 1].Value = "Группа & Студенты";
             var disciplinesList = disciplines.OrderBy(d => d.Name).ToList();
             for (int i = 0; i < disciplinesList.Count; i++)
             {
                 worksheet.Cells[1, i + 2].Value = disciplinesList[i].Name;
+                worksheet.Cells[1, i + 2].Style.Font.Bold = true;
             }
 
             int row = 2;
@@ -132,21 +141,30 @@ namespace BgituGrades.Services
             {
                 worksheet.Cells[row, 1].Value = group.Name;
                 worksheet.Cells[row, 1].Style.Font.Bold = true;
+                worksheet.Cells[row, 1, row, disciplinesList.Count + 1].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                worksheet.Cells[row, 1, row, disciplinesList.Count + 1].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
                 row++;
 
-                var groupStudents = students.Where(s => s.GroupId == group.Id);
-                foreach (var student in groupStudents.OrderBy(s => s.Name))
+                var groupStudents = students.Where(s => s.GroupId == group.Id).OrderBy(s => s.Name);
+                foreach (var student in groupStudents)
                 {
-                    worksheet.Cells[row, 1].Value = $"{student.Name}";
+                    worksheet.Cells[row, 1].Value = student.Name;
 
                     for (int i = 0; i < disciplinesList.Count; i++)
                     {
                         var discipline = disciplinesList[i];
                         var key = (student.Id, discipline.Id);
-                        if (markDict.TryGetValue(key, out var avgMark) && avgMark > 0)
+
+                        if (markDict.TryGetValue(key, out var avgMark))
                         {
                             worksheet.Cells[row, i + 2].Value = avgMark;
                             worksheet.Cells[row, i + 2].Style.Numberformat.Format = "0.0";
+                            worksheet.Cells[row, i + 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                        }
+                        else
+                        {
+                            worksheet.Cells[row, i + 2].Value = "0.0";
+                            worksheet.Cells[row, i + 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
                         }
                     }
                     row++;
@@ -154,6 +172,7 @@ namespace BgituGrades.Services
             }
 
             worksheet.Cells.AutoFitColumns();
+
             using var stream = new MemoryStream();
             await package.SaveAsAsync(stream);
             return stream.ToArray();
