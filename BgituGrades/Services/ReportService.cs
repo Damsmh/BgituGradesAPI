@@ -12,7 +12,6 @@ namespace BgituGrades.Services
     {
         Task<Guid> GenerateReportAsync(ReportRequest request, string connectionId);
     }
-
     public class ReportService(
         IHubContext<ReportHub> hubContext,
         IMemoryCache cache,
@@ -28,8 +27,8 @@ namespace BgituGrades.Services
             await _hubContext.Groups.AddToGroupAsync(connectionId, reportId.ToString());
             _ =  Task.Run(async () => await GenerateWithProgress(reportId, request));
             return reportId;
-        }
-
+        }    
+        
         private async Task GenerateWithProgress(Guid reportId, ReportRequest request)
         {
             using var scope = _scopeFactory.CreateScope();

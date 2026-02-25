@@ -62,7 +62,7 @@ namespace BgituGrades
 
             builder.Services.AddAsyncApiSchemaGeneration(options =>
             {
-                options.AssemblyMarkerTypes = [typeof(GradeHub)];
+                options.AssemblyMarkerTypes = [typeof(GradeHub), typeof(ReportHub)];
                 options.AsyncApi = new AsyncApiDocument
                 {
                     Info = new Info("Bgitu Grades SignalR API", "v1")
