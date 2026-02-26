@@ -63,14 +63,14 @@ namespace BgituGrades.Services
                 {
                     disciplines = await disciplineRepo.GetDisciplinesByIdsAsync(request.DisciplineIds);
                 } else {
-                    disciplines = await disciplineRepo.GetByGroupIdsAsync((int[])groups.Select(g => g.Id));
+                    disciplines = await disciplineRepo.GetByGroupIdsAsync(groups.Select(g => g.Id).ToArray());
                 }
 
                 IEnumerable<Student> students;
                 if (request.StudentIds != null) {
                     students = await studentRepo.GetStudentsByIdsAsync(request.StudentIds);
                 } else {
-                    students = await studentRepo.GetStudentsByGroupIdsAsync((int[])groups.Select(g => g.Id));
+                    students = await studentRepo.GetStudentsByGroupIdsAsync(groups.Select(g => g.Id).ToArray());
                 }
 
                 if (!groups.Any() || !disciplines.Any())
