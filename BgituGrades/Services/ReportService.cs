@@ -50,9 +50,14 @@ namespace BgituGrades.Services
             {
                 await _hubContext.Clients.Group(reportId.ToString())
                     .SendAsync("ReportProgress", reportId.ToString(), 10, "Загрузка данных...");
-
-
-                var groups = await groupRepo.GetGroupsByIdsAsync(request.GroupIds);
+                IEnumerable<Group> groups;
+                if (request.GroupIds != null)
+                {
+                    groups = await groupRepo.GetGroupsByIdsAsync(request.GroupIds);
+                } else {
+                    groups = await groupRepo.GetAllAsync();
+                }
+                 
                 IEnumerable<Discipline> disciplines;
                 if (request.DisciplineIds !=  null)
                 {
