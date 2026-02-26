@@ -110,121 +110,92 @@ namespace BgituGrades.Services
             using var package = new ExcelPackage();
             var worksheet = package.Workbook.Worksheets.Add("Отчёт успеваемости");
 
-            var disciplinesList = disciplines.OrderBy(d => d.Name).ToList();
             var sortedGroups = groups.OrderBy(g => g.Name).ToList();
-            int maxDisciplineCount = disciplinesList.Count;
+            var disciplinesByGroup = groups.ToDictionary(
+                g => g.Id,
+                g => g.Classes?
+                      .Where(c => c.Discipline != null)
+                      .Select(c => c.Discipline)
+                      .DistinctBy(d => d.Id)
+                      .OrderBy(d => d.Name)
+                      .ToList() ?? new List<Discipline>()
+            );
 
             var cellGroups = worksheet.Cells[1, 1];
             cellGroups.Value = "Группы";
             cellGroups.Style.Font.Bold = true;
-            cellGroups.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
             cellGroups.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
             cellGroups.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.DarkViolet);
-            cellGroups.Style.Font.Color.SetColor(System.Drawing.Color.Black);
+            cellGroups.Style.Font.Color.SetColor(System.Drawing.Color.White);
 
-            if (maxDisciplineCount > 0)
-            {
-                var disciplinesHeaderRange = worksheet.Cells[1, 2, 1, maxDisciplineCount + 1];
-                disciplinesHeaderRange.Merge = true;
-                disciplinesHeaderRange.Value = "Дисциплины";
-                disciplinesHeaderRange.Style.Font.Bold = true;
-                disciplinesHeaderRange.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
-                disciplinesHeaderRange.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                disciplinesHeaderRange.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.DarkViolet);
-                disciplinesHeaderRange.Style.Font.Color.SetColor(System.Drawing.Color.Black);
-            }
+            int maxCols = disciplinesByGroup.Any() ? disciplinesByGroup.Max(g => g.Value.Count) : 1;
+            var disciplinesHeaderRange = worksheet.Cells[1, 2, 1, maxCols + 1];
+            disciplinesHeaderRange.Merge = true;
+            disciplinesHeaderRange.Value = "Дисциплины";
+            disciplinesHeaderRange.Style.Font.Bold = true;
+            disciplinesHeaderRange.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+            disciplinesHeaderRange.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+            disciplinesHeaderRange.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.DarkViolet);
+            disciplinesHeaderRange.Style.Font.Color.SetColor(System.Drawing.Color.White);
 
-            Dictionary<(int StudentId, int DisciplineId), double> markDict = new();
-            try
-            {
-                if (disciplinesList.Any() && sortedGroups.Any())
-                {
-                    var allMarks = await _markRepository.GetMarksByDisciplinesAndGroupsAsync(disciplines.Select(d => d.Id).ToList(), sortedGroups.Select(g => g.Id).ToList());
-                    markDict = allMarks
-                        .Where(m => m.Work != null && !string.IsNullOrEmpty(m.Value))
-                        .Select(m => new {
-                            m.StudentId,
-                            m.Work.DisciplineId,
-                            ParsedValue = double.TryParse(m.Value.Replace(',', '.'), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double val) ? val : (double?)null
-                        })
-                        .Where(m => m.ParsedValue.HasValue)
-                        .GroupBy(m => new { m.StudentId, m.DisciplineId })
-                        .ToDictionary(g => (g.Key.StudentId, g.Key.DisciplineId), g => g.Average(m => m.ParsedValue.Value));
-                }
-            }
-            catch (Exception ex) { throw new Exception($"Ошибка данных: {ex.Message}"); }
+            var allMarks = await _markRepository.GetMarksByDisciplinesAndGroupsAsync(disciplines.Select(d => d.Id).ToList(), sortedGroups.Select(g => g.Id).ToList());
+            var markDict = allMarks
+                .Where(m => m.Work != null && !string.IsNullOrEmpty(m.Value))
+                .Select(m => new {
+                    m.StudentId,
+                    m.Work.DisciplineId,
+                    ParsedValue = double.TryParse(m.Value.Replace(',', '.'), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double val) ? val : (double?)null
+                })
+                .Where(m => m.ParsedValue.HasValue)
+                .GroupBy(m => new { m.StudentId, m.DisciplineId })
+                .ToDictionary(g => (g.Key.StudentId, g.Key.DisciplineId), g => g.Average(m => m.ParsedValue.Value));
 
             int currentRow = 2;
-
             foreach (var group in sortedGroups)
             {
-                var groupNameCell = worksheet.Cells[currentRow, 1];
-                groupNameCell.Value = group.Name;
-                groupNameCell.Style.Font.Bold = true;
-                groupNameCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                groupNameCell.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGreen);
+                worksheet.Cells[currentRow, 1].Value = group.Name;
+                worksheet.Cells[currentRow, 1].Style.Font.Bold = true;
+                worksheet.Cells[currentRow, 1].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                worksheet.Cells[currentRow, 1].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGreen);
 
-                var groupDisciplineIds = group.Classes?
-                    .Where(c => c.Discipline != null)
-                    .Select(c => c.DisciplineId)
-                    .Distinct()
-                    .ToHashSet() ?? new HashSet<int>();
+                if (!disciplinesByGroup.TryGetValue(group.Id, out var groupDisciplines))
+                    groupDisciplines = new List<Discipline>();
 
-                for (int i = 0; i < disciplinesList.Count; i++)
+                for (int i = 0; i < groupDisciplines.Count; i++)
                 {
-                    var currentDisc = disciplinesList[i];
-                    var discCell = worksheet.Cells[currentRow, i + 2];
-
-                    if (groupDisciplineIds.Contains(currentDisc.Id))
-                    {
-                        discCell.Value = currentDisc.Name;
-                    }
-
-                    discCell.Style.Font.Bold = true;
-                    discCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                    discCell.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                    var cell = worksheet.Cells[currentRow, i + 2];
+                    cell.Value = groupDisciplines[i].Name;
+                    cell.Style.Font.Bold = true;
+                    cell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                    cell.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
                 }
                 currentRow++;
 
-                var groupStudents = students.Where(s => s.GroupId == group.Id).OrderBy(s => s.Name).ToList();
+                var groupStudents = students.Where(s => s.GroupId == group.Id).OrderBy(s => s.Name);
                 foreach (var student in groupStudents)
                 {
                     worksheet.Cells[currentRow, 1].Value = student.Name;
-                    for (int i = 0; i < disciplinesList.Count; i++)
+                    for (int i = 0; i < groupDisciplines.Count; i++)
                     {
-                        var disc = disciplinesList[i];
-                        var cell = worksheet.Cells[currentRow, i + 2];
-
-                        if (groupDisciplineIds.Contains(disc.Id))
+                        var disc = groupDisciplines[i];
+                        if (markDict.TryGetValue((student.Id, disc.Id), out var avgMark))
                         {
-                            if (markDict.TryGetValue((student.Id, disc.Id), out var avgMark))
-                            {
-                                cell.Value = avgMark;
-                                cell.Style.Numberformat.Format = "0.0";
-                            }
-                            else
-                            {
-                                cell.Value = "0";
-                            }
+                            worksheet.Cells[currentRow, i + 2].Value = avgMark;
+                            worksheet.Cells[currentRow, i + 2].Style.Numberformat.Format = "0.0";
                         }
                         else
                         {
-                            cell.Value = "-";
+                            worksheet.Cells[currentRow, i + 2].Value = "0";
                         }
-                        cell.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                        worksheet.Cells[currentRow, i + 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
                     }
                     currentRow++;
                 }
             }
 
-
             worksheet.Cells.AutoFitColumns();
-
-            var modelRange = worksheet.Cells[1, 1, currentRow - 1, maxDisciplineCount + 1];
-            modelRange.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-            modelRange.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-            modelRange.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-            modelRange.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+            var fullRange = worksheet.Cells[1, 1, currentRow - 1, maxCols + 1];
+            fullRange.Style.Border.Top.Style = fullRange.Style.Border.Left.Style = fullRange.Style.Border.Right.Style = fullRange.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
 
             using var stream = new MemoryStream();
             await package.SaveAsAsync(stream);
@@ -236,106 +207,85 @@ namespace BgituGrades.Services
             using var package = new ExcelPackage();
             var worksheet = package.Workbook.Worksheets.Add("Отчёт посещаемости");
 
-            var disciplinesList = disciplines.OrderBy(d => d.Name).ToList();
             var sortedGroups = groups.OrderBy(g => g.Name).ToList();
-            int maxDisciplineCount = disciplinesList.Count;
-
-
-            var cellGroups = worksheet.Cells[1, 1];
-            cellGroups.Value = "Группы";
-            cellGroups.Style.Font.Bold = true;
-            cellGroups.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
-            cellGroups.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-            cellGroups.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.DarkViolet);
-            cellGroups.Style.Font.Color.SetColor(System.Drawing.Color.Black);
-
-            if (maxDisciplineCount > 0)
-            {
-                var disciplinesHeaderRange = worksheet.Cells[1, 2, 1, maxDisciplineCount + 1];
-                disciplinesHeaderRange.Merge = true;
-                disciplinesHeaderRange.Value = "Дисциплины";
-                disciplinesHeaderRange.Style.Font.Bold = true;
-                disciplinesHeaderRange.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
-                disciplinesHeaderRange.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                disciplinesHeaderRange.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.DarkViolet);
-                disciplinesHeaderRange.Style.Font.Color.SetColor(System.Drawing.Color.Black);
-            }
-
-            Dictionary<(int StudentId, int DisciplineId), (int Present, int Total)> presenceDict = new();
-            var allPresences = await _presenceRepository.GetPresencesByDisciplinesAndGroupsAsync(
-                disciplinesList.Select(d => d.Id).ToList(),
-                sortedGroups.Select(g => g.Id).ToList()
+            var disciplinesByGroup = groups.ToDictionary(
+                g => g.Id,
+                g => g.Classes?
+                      .Where(c => c.Discipline != null)
+                      .Select(c => c.Discipline)
+                      .DistinctBy(d => d.Id)
+                      .OrderBy(d => d.Name)
+                      .ToList() ?? new List<Discipline>()
             );
-            presenceDict = allPresences
+
+            worksheet.Cells[1, 1].Value = "Группы";
+            worksheet.Cells[1, 1].Style.Font.Bold = true;
+            worksheet.Cells[1, 1].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+            worksheet.Cells[1, 1].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.DarkViolet);
+            worksheet.Cells[1, 1].Style.Font.Color.SetColor(System.Drawing.Color.White);
+
+            int maxCols = disciplinesByGroup.Any() ? disciplinesByGroup.Max(g => g.Value.Count) : 1;
+            var headRange = worksheet.Cells[1, 2, 1, maxCols + 1];
+            headRange.Merge = true;
+            headRange.Value = "Дисциплины";
+            headRange.Style.Font.Bold = true;
+            headRange.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+            headRange.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+            headRange.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.DarkViolet);
+            headRange.Style.Font.Color.SetColor(System.Drawing.Color.White);
+
+            var allPresences = await _presenceRepository.GetPresencesByDisciplinesAndGroupsAsync(
+                disciplines.Select(d => d.Id).ToList(),
+                sortedGroups.Select(g => g.Id).ToList());
+
+            var presenceDict = allPresences
                 .GroupBy(m => new { m.StudentId, m.DisciplineId })
                 .ToDictionary(
                     g => (g.Key.StudentId, g.Key.DisciplineId),
                     g => (Present: g.Count(m => m.IsPresent == PresenceType.PRESENT), Total: g.Count())
                 );
-            int currentRow = 2;
 
+            int currentRow = 2;
             foreach (var group in sortedGroups)
             {
-                var groupNameCell = worksheet.Cells[currentRow, 1];
-                groupNameCell.Value = group.Name;
-                groupNameCell.Style.Font.Bold = true;
-                groupNameCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                groupNameCell.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGreen);
+                worksheet.Cells[currentRow, 1].Value = group.Name;
+                worksheet.Cells[currentRow, 1].Style.Font.Bold = true;
+                worksheet.Cells[currentRow, 1].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                worksheet.Cells[currentRow, 1].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGreen);
 
-                var groupDisciplineIds = group.Classes?
-                    .Where(c => c.Discipline != null)
-                    .Select(c => c.DisciplineId)
-                    .Distinct()
-                    .ToHashSet() ?? new HashSet<int>();
+                if (!disciplinesByGroup.TryGetValue(group.Id, out var groupDisciplines))
+                    groupDisciplines = new List<Discipline>();
 
-                for (int i = 0; i < disciplinesList.Count; i++)
+                for (int i = 0; i < groupDisciplines.Count; i++)
                 {
-                    var currentDisc = disciplinesList[i];
-                    var discCell = worksheet.Cells[currentRow, i + 2];
-
-                    if (groupDisciplineIds.Contains(currentDisc.Id))
-                    {
-                        discCell.Value = currentDisc.Name;
-                    }
-
-                    discCell.Style.Font.Bold = true;
-                    discCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                    discCell.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                    var cell = worksheet.Cells[currentRow, i + 2];
+                    cell.Value = groupDisciplines[i].Name;
+                    cell.Style.Font.Bold = true;
+                    cell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                    cell.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
                 }
                 currentRow++;
 
-                var groupStudents = students.Where(s => s.GroupId == group.Id).OrderBy(s => s.Name).ToList();
-                foreach (var student in groupStudents)
+                foreach (var student in students.Where(s => s.GroupId == group.Id).OrderBy(s => s.Name))
                 {
                     worksheet.Cells[currentRow, 1].Value = student.Name;
-                    for (int i = 0; i < disciplinesList.Count; i++)
+                    for (int i = 0; i < groupDisciplines.Count; i++)
                     {
-                        var disc = disciplinesList[i];
-                        var cell = worksheet.Cells[currentRow, i + 2];
-
-                        if (groupDisciplineIds.Contains(disc.Id))
-                        {
-                            if (presenceDict.TryGetValue((student.Id, disc.Id), out var stats))
-                                cell.Value = $"{stats.Present}/{stats.Total}";
-                            else
-                                cell.Value = "0/0";
-                        }
+                        var disc = groupDisciplines[i];
+                        if (presenceDict.TryGetValue((student.Id, disc.Id), out var stats))
+                            worksheet.Cells[currentRow, i + 2].Value = $"{stats.Present}/{stats.Total}";
                         else
-                        {
-                            cell.Value = "-";
-                        }
-                        cell.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                            worksheet.Cells[currentRow, i + 2].Value = "0/0";
+
+                        worksheet.Cells[currentRow, i + 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
                     }
                     currentRow++;
                 }
             }
 
             worksheet.Cells.AutoFitColumns();
-            var modelRange = worksheet.Cells[1, 1, currentRow - 1, maxDisciplineCount + 1];
-            modelRange.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-            modelRange.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-            modelRange.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
-            modelRange.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+            var borderRange = worksheet.Cells[1, 1, currentRow - 1, maxCols + 1];
+            borderRange.Style.Border.Top.Style = borderRange.Style.Border.Left.Style = borderRange.Style.Border.Right.Style = borderRange.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
 
             using var stream = new MemoryStream();
             await package.SaveAsAsync(stream);

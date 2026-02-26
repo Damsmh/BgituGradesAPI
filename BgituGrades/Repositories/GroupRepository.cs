@@ -44,7 +44,10 @@ namespace BgituGrades.Repositories
         public async Task<IEnumerable<Group>> GetAllAsync()
         {
             using var context = await contextFactory.CreateDbContextAsync();
-            var groups = await context.Groups.AsNoTracking().ToListAsync();
+            var groups = await context.Groups
+                .Include(g => g.Classes)
+                .ThenInclude(c => c.Discipline)
+                .AsNoTracking().ToListAsync();
             return groups;
         }
 
@@ -69,7 +72,7 @@ namespace BgituGrades.Repositories
         {
             using var context = await contextFactory.CreateDbContextAsync();
             return await context.Groups
-                .Include(g => g.Classes!)
+                .Include(g => g.Classes)
                     .ThenInclude(c => c.Discipline)
                 .AsNoTracking()
                 .Where(g => groupIds.Contains(g.Id))
