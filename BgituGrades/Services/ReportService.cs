@@ -163,12 +163,23 @@ namespace BgituGrades.Services
                 groupNameCell.Style.Font.Bold = true;
                 groupNameCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
                 groupNameCell.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGreen);
-                var groupDisciplines = group.Classes.Select(c => c.Discipline).Distinct().OrderBy(d => d.Name).ToList();
 
-                for (int i = 0; i < groupDisciplines.Count; i++)
+                var groupDisciplineIds = group.Classes?
+                    .Where(c => c.Discipline != null)
+                    .Select(c => c.DisciplineId)
+                    .Distinct()
+                    .ToHashSet() ?? new HashSet<int>();
+
+                for (int i = 0; i < disciplinesList.Count; i++)
                 {
+                    var currentDisc = disciplinesList[i];
                     var discCell = worksheet.Cells[currentRow, i + 2];
-                    discCell.Value = groupDisciplines[i].Name;
+
+                    if (groupDisciplineIds.Contains(currentDisc.Id))
+                    {
+                        discCell.Value = currentDisc.Name;
+                    }
+
                     discCell.Style.Font.Bold = true;
                     discCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
                     discCell.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
@@ -179,20 +190,26 @@ namespace BgituGrades.Services
                 foreach (var student in groupStudents)
                 {
                     worksheet.Cells[currentRow, 1].Value = student.Name;
-
                     for (int i = 0; i < disciplinesList.Count; i++)
                     {
                         var disc = disciplinesList[i];
                         var cell = worksheet.Cells[currentRow, i + 2];
 
-                        if (markDict.TryGetValue((student.Id, disc.Id), out var avgMark))
+                        if (groupDisciplineIds.Contains(disc.Id))
                         {
-                            cell.Value = avgMark;
-                            cell.Style.Numberformat.Format = "0.0";
+                            if (markDict.TryGetValue((student.Id, disc.Id), out var avgMark))
+                            {
+                                cell.Value = avgMark;
+                                cell.Style.Numberformat.Format = "0.0";
+                            }
+                            else
+                            {
+                                cell.Value = "0";
+                            }
                         }
                         else
                         {
-                            cell.Value = "0";
+                            cell.Value = "-";
                         }
                         cell.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
                     }
