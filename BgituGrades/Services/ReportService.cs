@@ -5,7 +5,6 @@ using BgituGrades.Repositories;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Distributed;
 using OfficeOpenXml;
-using System.Diagnostics.Eventing.Reader;
 
 namespace BgituGrades.Services
 {
@@ -111,82 +110,104 @@ namespace BgituGrades.Services
             using var package = new ExcelPackage();
             var worksheet = package.Workbook.Worksheets.Add("Отчёт успеваемости");
 
-            var disciplineIds = disciplines.Select(d => d.Id).ToList();
-            var groupIds = groups.Select(g => g.Id).ToList();
+            var disciplinesList = disciplines.OrderBy(d => d.Name).ToList();
+            var sortedGroups = groups.OrderBy(g => g.Name).ToList();
+            int maxDisciplineCount = disciplinesList.Count;
+
+            var cellGroups = worksheet.Cells[1, 1];
+            cellGroups.Value = "Группы";
+            cellGroups.Style.Font.Bold = true;
+            cellGroups.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+            cellGroups.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+            cellGroups.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.DarkViolet);
+            cellGroups.Style.Font.Color.SetColor(System.Drawing.Color.Black);
+
+            if (maxDisciplineCount > 0)
+            {
+                var disciplinesHeaderRange = worksheet.Cells[1, 2, 1, maxDisciplineCount + 1];
+                disciplinesHeaderRange.Merge = true;
+                disciplinesHeaderRange.Value = "Дисциплины";
+                disciplinesHeaderRange.Style.Font.Bold = true;
+                disciplinesHeaderRange.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                disciplinesHeaderRange.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                disciplinesHeaderRange.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.DarkViolet);
+                disciplinesHeaderRange.Style.Font.Color.SetColor(System.Drawing.Color.Black);
+            }
 
             Dictionary<(int StudentId, int DisciplineId), double> markDict = new();
-
             try
             {
-                if (disciplines.Any() && groups.Any())
+                if (disciplinesList.Any() && sortedGroups.Any())
                 {
-                    var allMarks = await _markRepository.GetMarksByDisciplinesAndGroupsAsync(disciplineIds, groupIds);
-
+                    var allMarks = await _markRepository.GetMarksByDisciplinesAndGroupsAsync(disciplines.Select(d => d.Id).ToList(), sortedGroups.Select(g => g.Id).ToList());
                     markDict = allMarks
-                        .Where(m => m.Work != null && !string.IsNullOrEmpty(m.Value)) 
-                        .Select(m => new
-                        {
+                        .Where(m => m.Work != null && !string.IsNullOrEmpty(m.Value))
+                        .Select(m => new {
                             m.StudentId,
                             m.Work.DisciplineId,
                             ParsedValue = double.TryParse(m.Value.Replace(',', '.'), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double val) ? val : (double?)null
                         })
                         .Where(m => m.ParsedValue.HasValue)
                         .GroupBy(m => new { m.StudentId, m.DisciplineId })
-                        .ToDictionary(
-                            g => (g.Key.StudentId, g.Key.DisciplineId),
-                            g => g.Average(m => m.ParsedValue.Value)
-                        );
+                        .ToDictionary(g => (g.Key.StudentId, g.Key.DisciplineId), g => g.Average(m => m.ParsedValue.Value));
                 }
             }
-            catch (Exception ex)
-            {
-                throw new Exception($"Ошибка при формировании данных успеваемости: {ex.Message}", ex);
-            }
+            catch (Exception ex) { throw new Exception($"Ошибка данных: {ex.Message}"); }
 
-            worksheet.Cells[1, 1].Value = "Группа & Студенты";
-            var disciplinesList = disciplines.OrderBy(d => d.Name).ToList();
-            for (int i = 0; i < disciplinesList.Count; i++)
-            {
-                worksheet.Cells[1, i + 2].Value = disciplinesList[i].Name;
-                worksheet.Cells[1, i + 2].Style.Font.Bold = true;
-            }
+            int currentRow = 2;
 
-            int row = 2;
-            foreach (var group in groups.OrderBy(g => g.Name))
+            foreach (var group in sortedGroups)
             {
-                worksheet.Cells[row, 1].Value = group.Name;
-                worksheet.Cells[row, 1].Style.Font.Bold = true;
-                worksheet.Cells[row, 1, row, disciplinesList.Count + 1].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                worksheet.Cells[row, 1, row, disciplinesList.Count + 1].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
-                row++;
+                var groupNameCell = worksheet.Cells[currentRow, 1];
+                groupNameCell.Value = group.Name;
+                groupNameCell.Style.Font.Bold = true;
+                groupNameCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                groupNameCell.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGreen);
+                var groupDisciplines = group.Classes.Select(c => c.Discipline).Distinct().OrderBy(d => d.Name).ToList();
 
-                var groupStudents = students.Where(s => s.GroupId == group.Id).OrderBy(s => s.Name);
+                for (int i = 0; i < groupDisciplines.Count; i++)
+                {
+                    var discCell = worksheet.Cells[currentRow, i + 2];
+                    discCell.Value = groupDisciplines[i].Name;
+                    discCell.Style.Font.Bold = true;
+                    discCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                    discCell.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                }
+                currentRow++;
+
+                var groupStudents = students.Where(s => s.GroupId == group.Id).OrderBy(s => s.Name).ToList();
                 foreach (var student in groupStudents)
                 {
-                    worksheet.Cells[row, 1].Value = student.Name;
+                    worksheet.Cells[currentRow, 1].Value = student.Name;
 
                     for (int i = 0; i < disciplinesList.Count; i++)
                     {
-                        var discipline = disciplinesList[i];
-                        var key = (student.Id, discipline.Id);
+                        var disc = disciplinesList[i];
+                        var cell = worksheet.Cells[currentRow, i + 2];
 
-                        if (markDict.TryGetValue(key, out var avgMark))
+                        if (markDict.TryGetValue((student.Id, disc.Id), out var avgMark))
                         {
-                            worksheet.Cells[row, i + 2].Value = avgMark;
-                            worksheet.Cells[row, i + 2].Style.Numberformat.Format = "0.0";
-                            worksheet.Cells[row, i + 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                            cell.Value = avgMark;
+                            cell.Style.Numberformat.Format = "0.0";
                         }
                         else
                         {
-                            worksheet.Cells[row, i + 2].Value = "0.0";
-                            worksheet.Cells[row, i + 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                            cell.Value = "0";
                         }
+                        cell.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
                     }
-                    row++;
+                    currentRow++;
                 }
             }
 
+
             worksheet.Cells.AutoFitColumns();
+
+            var modelRange = worksheet.Cells[1, 1, currentRow - 1, maxDisciplineCount + 1];
+            modelRange.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+            modelRange.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+            modelRange.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+            modelRange.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
 
             using var stream = new MemoryStream();
             await package.SaveAsAsync(stream);
@@ -198,77 +219,93 @@ namespace BgituGrades.Services
             using var package = new ExcelPackage();
             var worksheet = package.Workbook.Worksheets.Add("Отчёт посещаемости");
 
-            var disciplineIds = disciplines.Select(d => d.Id).ToList();
-            var groupIds = groups.Select(g => g.Id).ToList();
+            var disciplinesList = disciplines.OrderBy(d => d.Name).ToList();
+            var sortedGroups = groups.OrderBy(g => g.Name).ToList();
+            int maxDisciplineCount = disciplinesList.Count;
 
+
+            var cellGroups = worksheet.Cells[1, 1];
+            cellGroups.Value = "Группы";
+            cellGroups.Style.Font.Bold = true;
+            cellGroups.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+            cellGroups.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+            cellGroups.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.DarkViolet);
+            cellGroups.Style.Font.Color.SetColor(System.Drawing.Color.Black);
+
+            if (maxDisciplineCount > 0)
+            {
+                var disciplinesHeaderRange = worksheet.Cells[1, 2, 1, maxDisciplineCount + 1];
+                disciplinesHeaderRange.Merge = true;
+                disciplinesHeaderRange.Value = "Дисциплины";
+                disciplinesHeaderRange.Style.Font.Bold = true;
+                disciplinesHeaderRange.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                disciplinesHeaderRange.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                disciplinesHeaderRange.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.DarkViolet);
+                disciplinesHeaderRange.Style.Font.Color.SetColor(System.Drawing.Color.Black);
+            }
 
             Dictionary<(int StudentId, int DisciplineId), (int Present, int Total)> presenceDict = new();
+            var allPresences = await _presenceRepository.GetPresencesByDisciplinesAndGroupsAsync(
+                disciplinesList.Select(d => d.Id).ToList(),
+                sortedGroups.Select(g => g.Id).ToList()
+            );
+            presenceDict = allPresences
+                .GroupBy(m => new { m.StudentId, m.DisciplineId })
+                .ToDictionary(
+                    g => (g.Key.StudentId, g.Key.DisciplineId),
+                    g => (Present: g.Count(m => m.IsPresent == PresenceType.PRESENT), Total: g.Count())
+                );
+            int currentRow = 2;
 
-            try
+            foreach (var group in sortedGroups)
             {
-                if (disciplines.Any() && groups.Any())
+                var groupNameCell = worksheet.Cells[currentRow, 1];
+                groupNameCell.Value = group.Name;
+                groupNameCell.Style.Font.Bold = true;
+                groupNameCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                groupNameCell.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGreen);
+                var groupDisciplines = group.Classes.Select(c => c.Discipline).Distinct().OrderBy(d => d.Name).ToList();
+
+                for (int i = 0; i < groupDisciplines.Count; i++)
                 {
-                    var allPresences = await _presenceRepository.GetPresencesByDisciplinesAndGroupsAsync(disciplineIds, groupIds);
-
-                    presenceDict = allPresences
-                        .GroupBy(m => new { m.StudentId, m.DisciplineId })
-                        .ToDictionary(
-                            g => (g.Key.StudentId, g.Key.DisciplineId),
-                            g => (
-                                Present: g.Count(m => m.IsPresent == PresenceType.PRESENT),
-                                Total: g.Count()
-                            )
-                        );
+                    var discCell = worksheet.Cells[currentRow, i + 2];
+                    discCell.Value = groupDisciplines[i].Name;
+                    discCell.Style.Font.Bold = true;
+                    discCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                    discCell.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
                 }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Ошибка при формировании данных посещаемости: {ex.Message}", ex);
-            }
+                currentRow++;
 
-            worksheet.Cells[1, 1].Value = "Группа & Студенты";
-            var disciplinesList = disciplines.OrderBy(d => d.Name).ToList();
-            for (int i = 0; i < disciplinesList.Count; i++)
-            {
-                worksheet.Cells[1, i + 2].Value = disciplinesList[i].Name;
-                worksheet.Cells[1, i + 2].Style.Font.Bold = true;
-            }
-
-            int row = 2;
-            foreach (var group in groups.OrderBy(g => g.Name))
-            {
-                worksheet.Cells[row, 1].Value = group.Name;
-                worksheet.Cells[row, 1].Style.Font.Bold = true;
-                worksheet.Cells[row, 1, row, disciplinesList.Count + 1].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                worksheet.Cells[row, 1, row, disciplinesList.Count + 1].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
-                row++;
-
-                var groupStudents = students.Where(s => s.GroupId == group.Id).OrderBy(s => s.Name);
+                var groupStudents = students.Where(s => s.GroupId == group.Id).OrderBy(s => s.Name).ToList();
                 foreach (var student in groupStudents)
                 {
-                    worksheet.Cells[row, 1].Value = student.Name;
+                    worksheet.Cells[currentRow, 1].Value = student.Name;
 
                     for (int i = 0; i < disciplinesList.Count; i++)
                     {
-                        var discipline = disciplinesList[i];
-                        var key = (student.Id, discipline.Id);
+                        var disc = disciplinesList[i];
+                        var cell = worksheet.Cells[currentRow, i + 2];
 
-                        if (presenceDict.TryGetValue(key, out var stats))
+                        if (presenceDict.TryGetValue((student.Id, disc.Id), out var stats))
                         {
-                            worksheet.Cells[row, i + 2].Value = $"{stats.Present}/{stats.Total}";
-
-                            worksheet.Cells[row, i + 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                            cell.Value = $"{stats.Present}/{stats.Total}";
                         }
                         else
                         {
-                            worksheet.Cells[row, i + 2].Value = "0/0";
+                            cell.Value = "0/0";
                         }
+                        cell.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
                     }
-                    row++;
+                    currentRow++;
                 }
             }
 
             worksheet.Cells.AutoFitColumns();
+            var modelRange = worksheet.Cells[1, 1, currentRow - 1, maxDisciplineCount + 1];
+            modelRange.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+            modelRange.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+            modelRange.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+            modelRange.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
 
             using var stream = new MemoryStream();
             await package.SaveAsAsync(stream);
