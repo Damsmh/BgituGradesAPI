@@ -114,9 +114,14 @@ namespace BgituGrades.Services
             var zebraColor = System.Drawing.Color.FromArgb(245, 245, 245);
 
             var sortedGroups = groups.OrderBy(g => g.Name).ToList();
+            var allowedDisciplineIds = disciplines.Select(d => d.Id).ToHashSet();
+
             var disciplinesByGroup = groups.ToDictionary(
                 g => g.Id,
-                g => g.Classes?.Where(c => c.Discipline != null).Select(c => c.Discipline).DistinctBy(d => d.Id).OrderBy(d => d.Name).ToList() ?? new List<Discipline>()
+                g => g.Classes?.Where(c => c.Discipline != null && allowedDisciplineIds.Contains(c.Discipline.Id))
+                               .Select(c => c.Discipline)
+                               .DistinctBy(d => d.Id)
+                               .OrderBy(d => d.Name).ToList() ?? new List<Discipline>()
             );
 
             var cellGroups = worksheet.Cells[1, 1];
@@ -216,9 +221,14 @@ namespace BgituGrades.Services
             var zebraColor = System.Drawing.Color.FromArgb(245, 245, 245);
 
             var sortedGroups = groups.OrderBy(g => g.Name).ToList();
+            var allowedDisciplineIds = disciplines.Select(d => d.Id).ToHashSet();
+
             var disciplinesByGroup = groups.ToDictionary(
                 g => g.Id,
-                g => g.Classes?.Where(c => c.Discipline != null).Select(c => c.Discipline).DistinctBy(d => d.Id).OrderBy(d => d.Name).ToList() ?? new List<Discipline>()
+                g => g.Classes?.Where(c => c.Discipline != null && allowedDisciplineIds.Contains(c.Discipline.Id))
+                               .Select(c => c.Discipline)
+                               .DistinctBy(d => d.Id)
+                               .OrderBy(d => d.Name).ToList() ?? new List<Discipline>()
             );
 
             worksheet.Cells[1, 1].Value = "Группы";

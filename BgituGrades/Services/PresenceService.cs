@@ -58,6 +58,7 @@ namespace BgituGrades.Services
 
             if (presence != null)
             {
+                presence.IsPresent = request.IsPresent;
                 await _presenceRepository.UpdatePresenceAsync(presence);
             }
             else
