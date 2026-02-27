@@ -57,6 +57,7 @@ namespace BgituGrades.Services
 
             if (mark != null)
             {
+                mark.Value = request.Value;
                 await _markRepository.UpdateMarkAsync(mark);
             }
             else
