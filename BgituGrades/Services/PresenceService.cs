@@ -13,13 +13,14 @@ namespace BgituGrades.Services
         Task<IEnumerable<PresenceResponse>> GetPresencesByDisciplineAndGroupAsync(GetPresenceByDisciplineAndGroupRequest request);
         Task<bool> DeletePresenceByStudentAndDateAsync(DeletePresenceByStudentAndDateRequest request);
         Task<bool> UpdatePresenceAsync(UpdatePresenceRequest request);
-        Task<FullGradePresenceResponse> UpdateOrCreatePresenceAsync(int ClassId, UpdatePresenceGradeRequest request);
+        Task<FullGradePresenceResponse> UpdateOrCreatePresenceAsync(UpdatePresenceGradeRequest request);
 
     }
     public class PresenceService(IPresenceRepository presenceRepository, IMapper mapper) : IPresenceService
     {
         private readonly IPresenceRepository _presenceRepository = presenceRepository;
         private readonly IMapper _mapper = mapper;
+
 
         public async Task<PresenceResponse> CreatePresenceAsync(CreatePresenceRequest request)
         {
@@ -51,9 +52,9 @@ namespace BgituGrades.Services
             return await _presenceRepository.UpdatePresenceAsync(entity);
         }
 
-        public async Task<FullGradePresenceResponse> UpdateOrCreatePresenceAsync(int classId, UpdatePresenceGradeRequest request)
+        public async Task<FullGradePresenceResponse> UpdateOrCreatePresenceAsync(UpdatePresenceGradeRequest request)
         {
-            var presence = await _presenceRepository.GetAsync(request.StudentId, request.StudentId, request.Date);
+            var presence = await _presenceRepository.GetAsync(request.DisciplineId, request.StudentId, request.Date);
 
             if (presence != null)
             {
@@ -68,7 +69,7 @@ namespace BgituGrades.Services
             {
                 StudentId = request.StudentId,
                 Presences = [new GradePresenceResponse {
-                    ClassId = classId,
+                    ClassId = request.ClassId,
                     IsPresent = request.IsPresent,
                     Date = request.Date
                 }]

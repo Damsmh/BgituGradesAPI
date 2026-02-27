@@ -49,10 +49,12 @@ namespace BgituGrades.Hubs
         [Authorize(Policy = "Edit")]
         [PublishOperation(typeof(UpdatePresenceGradeRequest), Summary = "Обновить или создать запись о посещаемости", OperationId = nameof(UpdatePresenceGrade))]
         [SubscribeOperation(typeof(FullGradePresenceResponse), Summary = "Событие: Посещаемость обновлена (рассылается всем)", OperationId = "UpdatedPresence")]
-        public async Task UpdatePresenceGrade(int classId, UpdatePresenceGradeRequest request)
+        public async Task UpdatePresenceGrade(UpdatePresenceGradeRequest request)
         {
-            var response = await _presenceService.UpdateOrCreatePresenceAsync(classId, request);
+
+            var response = await _presenceService.UpdateOrCreatePresenceAsync(request);
             await Clients.All.SendAsync("UpdatedPresence", response);
+            
         }
     }
 }

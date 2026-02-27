@@ -32,6 +32,8 @@ namespace BgituGrades.Models.Presence
     public class UpdatePresenceGradeRequest
     {
         [Required]
+        public int ClassId { get; set; }
+        [Required]
         public PresenceType IsPresent { get; set; }
         [Required]
         public DateOnly Date { get; set; }
