@@ -81,6 +81,7 @@ namespace BgituGrades.Repositories
                         .Where(p => p.DisciplineId == disciplineId)
                         .Select(p => new { p.Date, p.IsPresent })
                 })
+                .OrderBy(s => s.Name)
                 .AsNoTracking()
                 .ToListAsync();
 
@@ -113,6 +114,7 @@ namespace BgituGrades.Repositories
                         .Where(m => m.Work.DisciplineId == disciplineId)
                         .Select(m => new { m.WorkId, m.Value })
                 })
+                .OrderBy(s => s.Name)
                 .AsNoTracking()
                 .ToListAsync();
 
