@@ -9,7 +9,7 @@ services:
       - "1337:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__PostgreSQL=Host=db;Port=${DB_PORT};Database=${DB_NAME};Username=${DB_USER};Password=${DB_PASSWORD};Pooling=true;MinPoolSize=10;MaxPoolSize=150;Keepalive=60"
+      - ConnectionStrings__PostgreSQL=Host=db;Port=${DB_PORT};Database=${DB_NAME};Username=${DB_USER};Password=${DB_PASSWORD};Pooling=true;MinPoolSize=10;MaxPoolSize=150;Keepalive=60
       - ConnectionStrings__Redis=redis:${REDIS_PORT}
     depends_on:
       db:
