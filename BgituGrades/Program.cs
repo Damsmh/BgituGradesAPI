@@ -5,7 +5,6 @@ using BgituGrades.Data;
 using BgituGrades.Entities;
 using BgituGrades.Features;
 using BgituGrades.Hubs;
-using BgituGrades.Middleware;
 using BgituGrades.Repositories;
 using BgituGrades.Services;
 using FluentValidation;
@@ -190,7 +189,6 @@ namespace BgituGrades
             });
 
             app.MapAsyncApiDocuments();
-            app.UseMiddleware<ValidationExceptionMiddleware>();
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseCors();
