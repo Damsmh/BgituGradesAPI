@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BgituGrades.Entities;
+using BgituGrades.Features;
 using BgituGrades.Models.Key;
 using BgituGrades.Repositories;
 using System.Security.Cryptography;
@@ -13,16 +14,20 @@ namespace BgituGrades.Services
         Task<KeyResponse> GenerateKeyAsync(Role role);
         Task<bool> DeleteKeyAsync(string key);
     }
-    public class KeyService(IKeyRepository keyRepository, IMapper mapper) : IKeyService
+    public class KeyService(IKeyRepository keyRepository, ITokenHasher hasher, IMapper mapper) : IKeyService
     {
         private readonly IKeyRepository _keyRepository = keyRepository;
         private readonly IMapper _mapper = mapper;
+        private readonly ITokenHasher _hasher = hasher;
         public async Task<KeyResponse> GenerateKeyAsync(Role role)
         {
             var newKey = RandomNumberGenerator.GetHexString(64, true);
+
             var apiKey = new ApiKey
             {
-                Key = newKey,
+                Key = newKey[..8],                   
+                LookupHash = _hasher.ComputeLookupHash(newKey),
+                StoredHash = _hasher.Hash(newKey),        
                 OwnerName = "bgitugrades",
                 Role = role.ToString(),
                 ExpiryDate = role == Role.STUDENT ? DateTime.UtcNow.AddDays(30) : null
@@ -35,7 +40,8 @@ namespace BgituGrades.Services
 
         public async Task<bool> DeleteKeyAsync(string key)
         {
-            return await _keyRepository.DeleteKeyAsync(key);
+            var lookupHash = _hasher.ComputeLookupHash(key);
+            return await _keyRepository.DeleteKeyAsync(lookupHash);
         }
 
         public async Task<IEnumerable<KeyResponse>> GetKeysAsync()

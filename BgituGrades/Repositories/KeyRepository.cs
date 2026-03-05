@@ -10,6 +10,7 @@ namespace BgituGrades.Repositories
         Task<ApiKey> CreateKeyAsync(ApiKey entity);
         Task<ApiKey?> GetAsync(string key);
         Task<bool> DeleteKeyAsync(string key);
+        Task<ApiKey?> GetByLookupHashAsync(string lookupHash);
     }
     public class KeyRepository(AppDbContext dbContext) : IKeyRepository
     {
@@ -32,6 +33,12 @@ namespace BgituGrades.Repositories
         public async Task<ApiKey?> GetAsync(string key)
         {
             var storedKey = await _dbContext.ApiKeys.FindAsync(key);
+            return storedKey;
+        }
+
+        public async Task<ApiKey?> GetByLookupHashAsync(string lookupHash)
+        {
+            var storedKey = await _dbContext.ApiKeys.Where(k => k.LookupHash == lookupHash).FirstOrDefaultAsync();
             return storedKey;
         }
 
