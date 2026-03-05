@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace BgutuGrades.Migrations
+namespace BgituGrades.Migrations
 {
     /// <inheritdoc />
     public partial class UpdateClass : Migration

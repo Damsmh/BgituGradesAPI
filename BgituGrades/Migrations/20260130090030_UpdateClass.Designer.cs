@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace BgutuGrades.Migrations
+namespace BgituGrades.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     [Migration("20260130090030_UpdateClass")]

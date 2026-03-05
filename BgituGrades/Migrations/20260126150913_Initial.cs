@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace BgutuGrades.Migrations
+namespace BgituGrades.Migrations
 {
     /// <inheritdoc />
     public partial class Initial : Migration
