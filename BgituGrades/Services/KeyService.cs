@@ -35,6 +35,7 @@ namespace BgituGrades.Services
 
             var createdKey = await _keyRepository.CreateKeyAsync(apiKey);
             var response = _mapper.Map<KeyResponse>(createdKey);
+            response.Key = newKey;
             return response;
         }
 

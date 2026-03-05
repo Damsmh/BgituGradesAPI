@@ -145,22 +145,14 @@ namespace BgituGrades
                     var dbContext = services.GetRequiredService<AppDbContext>();
                     await dbContext.Database.MigrateAsync();
 
-                    var keyRepo = services.GetRequiredService<IKeyRepository>();
-                    var existingKeys = await keyRepo.GetKeysAsync();
+                    var keyService = services.GetRequiredService<IKeyService>();
+                    var existingKeys = await keyService.GetKeysAsync();
 
                     if (!existingKeys.Any())
                     {
-                        var adminKeyStr = Guid.NewGuid().ToString("N");
-                        var adminKey = new ApiKey
-                        {
-                            Key = adminKeyStr,
-                            Role = "ADMIN",
-                            OwnerName = "Initial Admin"
-                        };
-
-                        await keyRepo.CreateKeyAsync(adminKey);
+                        var key = await keyService.GenerateKeyAsync(Role.ADMIN);
                         Console.WriteLine($"##################################");
-                        Console.WriteLine($"### INITIAL KEY: {adminKeyStr} ###");
+                        Console.WriteLine($"### INITIAL KEY: {key.Key} ###");
                         Console.WriteLine($"##################################");
 
                     }
