@@ -25,7 +25,7 @@ namespace BgituGrades.Services
 
             var apiKey = new ApiKey
             {
-                Key = newKey[..8],                   
+                Key = newKey,                   
                 LookupHash = _hasher.ComputeLookupHash(newKey),
                 StoredHash = _hasher.Hash(newKey),        
                 OwnerName = "bgitugrades",
@@ -35,7 +35,6 @@ namespace BgituGrades.Services
 
             var createdKey = await _keyRepository.CreateKeyAsync(apiKey);
             var response = _mapper.Map<KeyResponse>(createdKey);
-            response.Key = newKey;
             return response;
         }
 
