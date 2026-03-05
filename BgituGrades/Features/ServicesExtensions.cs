@@ -34,6 +34,7 @@ namespace BgituGrades.Features
             services.AddScoped<IApiKeyProvider, ApiKeyProvider>();
             services.AddScoped<IKeyService, KeyService>();
             services.AddScoped<IReportService, ReportService>();
+            services.AddSingleton<ITokenHasher, TokenHasher>();
             return services;
         }
     }
