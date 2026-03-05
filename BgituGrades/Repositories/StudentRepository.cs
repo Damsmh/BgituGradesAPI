@@ -4,7 +4,6 @@ using BgituGrades.Models.Class;
 using BgituGrades.Models.Mark;
 using BgituGrades.Models.Presence;
 using Microsoft.EntityFrameworkCore;
-using System.Text.RegularExpressions;
 
 namespace BgituGrades.Repositories
 {
@@ -69,7 +68,6 @@ namespace BgituGrades.Repositories
         public async Task<IEnumerable<FullGradePresenceResponse>> GetPresenseGrade(IEnumerable<ClassDateResponse> scheduleDates, int groupId, int disciplineId)
         {
             using var context = await contextFactory.CreateDbContextAsync();
-            // ✅ Сначала загружаем в память, потом применяем клиентские операции
             var studentsWithPresence = await context.Students
                 .Where(s => s.GroupId == groupId)
                 .Include(s => s.Presences)
@@ -77,14 +75,13 @@ namespace BgituGrades.Repositories
                 .AsNoTracking()
                 .ToListAsync();
 
-            // Преобразования выполняем на клиенте (не в SQL)
             var presenceByStudent = studentsWithPresence.Select(s => new
             {
                 s.Id,
                 s.Name,
                 PresencesByDate = s.Presences
                     .Where(p => p.DisciplineId == disciplineId)
-                    .ToDictionary(p => p.Date, p => p.IsPresent)
+                    .ToLookup(p => p.Date, p => p.IsPresent)
             }).ToList();
 
             var scheduleDatesList = scheduleDates.ToList();
@@ -97,9 +94,7 @@ namespace BgituGrades.Repositories
                     ClassId = date.Id,
                     ClassType = date.ClassType,
                     Date = date.Date,
-                    IsPresent = s.PresencesByDate.TryGetValue(date.Date, out var presence) 
-                        ? presence 
-                        : PresenceType.PRESENT
+                    IsPresent = s.PresencesByDate[date.Date].FirstOrDefault(PresenceType.PRESENT)
                 }).ToList()
             });
 
@@ -123,7 +118,7 @@ namespace BgituGrades.Repositories
                 s.Name,
                 MarksByWorkId = s.Marks
                     .Where(m => m.Work.DisciplineId == disciplineId)
-                    .ToDictionary(m => m.WorkId, m => m.Value)
+                    .ToLookup(m => m.WorkId, m => m.Value)
             }).ToList();
 
             var worksList = works.ToList();
@@ -135,7 +130,7 @@ namespace BgituGrades.Repositories
                 {
                     WorkId = work.Id,
                     Name = work.Name,
-                    Value = s.MarksByWorkId.TryGetValue(work.Id, out var mark) ? mark : ""
+                    Value = s.MarksByWorkId[work.Id].FirstOrDefault() ?? ""
                 }).ToList()
             });
 
