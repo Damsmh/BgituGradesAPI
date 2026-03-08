@@ -53,9 +53,7 @@ namespace BgituGrades.Controllers
         [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UpdatePresence([FromBody] UpdatePresenceRequest request)
         {
-            var success = await _presenceService.UpdatePresenceAsync(request);
-            if (!success)
-                return NotFound(request.Id);
+            await _presenceService.UpdatePresenceAsync(request);
 
             return NoContent();
         }

@@ -15,7 +15,7 @@ namespace BgituGrades.Services
         Task<PresenceResponse> CreatePresenceAsync(CreatePresenceRequest request);
         Task<IEnumerable<PresenceResponse>> GetPresencesByDisciplineAndGroupAsync(GetPresenceByDisciplineAndGroupRequest request);
         Task<bool> DeletePresenceByStudentAndDateAsync(DeletePresenceByStudentAndDateRequest request);
-        Task<bool> UpdatePresenceAsync(UpdatePresenceRequest request);
+        Task UpdatePresenceAsync(UpdatePresenceRequest request);
         Task<FullGradePresenceResponse> UpdateOrCreatePresenceAsync(UpdatePresenceGradeRequest request);
         Task<IEnumerable<PresenceDTO>> GetAllPresencesDtoAsync();
         Task<PresenceDTO?> GetPresenceDtoByIdAsync(int id);
@@ -76,15 +76,10 @@ namespace BgituGrades.Services
             return result;
         }
 
-        public async Task<bool> UpdatePresenceAsync(UpdatePresenceRequest request)
+        public async Task UpdatePresenceAsync(UpdatePresenceRequest request)
         {
             var entity = _mapper.Map<Presence>(request);
-            var result = await _presenceRepository.UpdatePresenceAsync(entity);
-            if (result)
-            {
-                await InvalidateCacheAsync(request.DisciplineId, request.StudentId);
-            }
-            return result;
+            await _presenceRepository.UpdatePresenceAsync(entity);
         }
 
         public async Task<FullGradePresenceResponse> UpdateOrCreatePresenceAsync(UpdatePresenceGradeRequest request)
