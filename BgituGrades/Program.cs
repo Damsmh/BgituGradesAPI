@@ -5,7 +5,6 @@ using BgituGrades.Data;
 using BgituGrades.Entities;
 using BgituGrades.Features;
 using BgituGrades.Hubs;
-using BgituGrades.Repositories;
 using BgituGrades.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;

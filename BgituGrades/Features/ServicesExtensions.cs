@@ -17,6 +17,7 @@ namespace BgituGrades.Features
             services.AddScoped<IPresenceRepository, PresenceRepository>();
             services.AddScoped<ITransferRepository, TransferRepository>();
             services.AddScoped<IKeyRepository, KeyRepository>();
+            services.AddScoped<ISettingRepository, SettingRepository>();
             return services;
         }
 
@@ -35,6 +36,7 @@ namespace BgituGrades.Features
             services.AddScoped<IKeyService, KeyService>();
             services.AddScoped<IReportService, ReportService>();
             services.AddSingleton<ITokenHasher, TokenHasher>();
+            services.AddScoped<ISettingService, SettingService>();
             return services;
         }
     }

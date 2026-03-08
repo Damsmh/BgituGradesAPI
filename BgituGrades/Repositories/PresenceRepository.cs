@@ -13,7 +13,7 @@ namespace BgituGrades.Repositories
         Task<IEnumerable<Presence>> GetPresencesByDisciplinesAndGroupsAsync(List<int> disciplineIds, List<int> groupIds);
         Task<Presence?> GetAsync(int disciplineId, int studentId, DateOnly date);
         Task<bool> DeletePresenceByStudentAndDateAsync(int studentId, DateOnly date);
-        Task<bool> UpdatePresenceAsync(Presence entity);
+        Task UpdatePresenceAsync(Presence entity);
         Task DeleteAllAsync();
         Task AddNewStudentPresences(int studentId, Dictionary<int, IEnumerable<DateOnly>> disciplines);
         Task<Presence?> GetPresenceByIdAsync(int id);
@@ -56,11 +56,10 @@ namespace BgituGrades.Repositories
             return result > 0;
         }
 
-        public async Task<bool> UpdatePresenceAsync(Presence entity)
+        public async Task UpdatePresenceAsync(Presence entity)
         {
             _dbContext.Presences.Update(entity);
             await _dbContext.SaveChangesAsync();
-            return true;
         }
 
         public async Task DeleteAllAsync()
