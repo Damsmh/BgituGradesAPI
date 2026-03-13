@@ -47,8 +47,9 @@ namespace BgituGrades.Repositories
             using var context = await contextFactory.CreateDbContextAsync();
             var groups = await context.Groups
                 .Include(g => g.Classes)
-                .ThenInclude(c => c.Discipline)
-                .AsNoTracking().ToListAsync();
+                    .ThenInclude(c => c.Discipline)
+                .AsNoTracking()
+                .ToListAsync();
             return groups;
         }
 
@@ -73,8 +74,10 @@ namespace BgituGrades.Repositories
         {
             using var context = await contextFactory.CreateDbContextAsync();
             return await context.Groups
-                .AsNoTracking()
                 .Where(g => groupIds.Contains(g.Id))
+                .Include(g => g.Classes)
+                    .ThenInclude(c => c.Discipline)
+                .AsNoTracking()
                 .ToListAsync();
         }
 

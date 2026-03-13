@@ -210,32 +210,27 @@ namespace BgituGrades.Services
             worksheet.View.FreezePanes(2, 2);
 
             var preview = new ReportPreviewDto();
-            preview.Headers.Add("Студент");
-
-            var allDisciplineNames = disciplinesByGroup
-                .SelectMany(kvp => kvp.Value)
-                .DistinctBy(d => d.Id)
-                .OrderBy(d => d.Name)
-                .Select(d => d.Name);
-            preview.Headers.AddRange(allDisciplineNames);
 
             foreach (var group in sortedGroups)
             {
+                var groupDisciplines = disciplinesByGroup[group.Id];
+                var cells = new List<string> { group.Name };
+                cells.AddRange(groupDisciplines.Select(d => d.Name));
                 preview.Rows.Add(new PreviewRow
                 {
                     IsGroupHeader = true,
-                    Cells = new List<string> { group.Name }
+                    Cells = cells
                 });
 
-                var groupDisciplines = disciplinesByGroup[group.Id];
+
                 var groupStudents = students
                     .Where(s => s.GroupId == group.Id)
                     .OrderBy(s => s.Name);
 
                 foreach (var student in groupStudents)
                 {
-                    var cells = new List<string> { student.Name };
-                    cells.AddRange(groupDisciplines.Select(d =>
+                    var scells = new List<string> { student.Name };
+                    scells.AddRange(groupDisciplines.Select(d =>
                         markDict.TryGetValue((student.Id, d.Id), out var mark)
                             ? mark.ToString("0.0", CultureInfo.InvariantCulture)
                             : "0"
@@ -244,7 +239,7 @@ namespace BgituGrades.Services
                     preview.Rows.Add(new PreviewRow
                     {
                         IsGroupHeader = false,
-                        Cells = cells
+                        Cells = scells
                     });
                 }
             }
@@ -353,32 +348,27 @@ namespace BgituGrades.Services
             worksheet.View.FreezePanes(2, 2);
 
             var preview = new ReportPreviewDto();
-            preview.Headers.Add("Группы");
-
-            var allDisciplineNames = disciplinesByGroup
-                .SelectMany(kvp => kvp.Value)
-                .DistinctBy(d => d.Id)
-                .OrderBy(d => d.Name)
-                .Select(d => d.Name);
-            preview.Headers.AddRange(allDisciplineNames);
 
             foreach (var group in sortedGroups)
             {
+                var groupDisciplines = disciplinesByGroup[group.Id];
+                var cells = new List<string> { group.Name };
+                cells.AddRange(groupDisciplines.Select(d => d.Name));
                 preview.Rows.Add(new PreviewRow
                 {
                     IsGroupHeader = true,
-                    Cells = new List<string> { group.Name }
+                    Cells = cells
                 });
 
-                var groupDisciplines = disciplinesByGroup[group.Id];
+                
                 var groupStudents = students
                     .Where(s => s.GroupId == group.Id)
                     .OrderBy(s => s.Name);
 
                 foreach (var student in groupStudents)
                 {
-                    var cells = new List<string> { student.Name };
-                    cells.AddRange(groupDisciplines.Select(d =>
+                    var scells = new List<string> { student.Name };
+                    scells.AddRange(groupDisciplines.Select(d =>
                         presenceDict.TryGetValue((student.Id, d.Id), out var stats)
                             ? $"{stats.Present}/{stats.Total}"
                             : "0/0"
@@ -387,7 +377,7 @@ namespace BgituGrades.Services
                     preview.Rows.Add(new PreviewRow
                     {
                         IsGroupHeader = false,
-                        Cells = cells
+                        Cells = scells
                     });
                 }
             }
