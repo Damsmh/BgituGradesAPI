@@ -12,5 +12,6 @@ namespace BgituGrades.Entities
         public ICollection<Student>? Students { get; set; }
         public ICollection<Class>? Classes { get; set; }
         public ICollection<Transfer>? Transfers { get; set; }
+        public ICollection<Work>? Works { get; set; }
     }
 }

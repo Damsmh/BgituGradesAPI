@@ -7,13 +7,13 @@
     }
     public class ReportPreviewDto
     {
-        public List<string> Headers { get; set; }
-        public List<PreviewRow> Rows { get; set; }
+        public List<string> Headers { get; set; } = new List<string>();
+        public List<PreviewRow> Rows { get; set; } = new List<PreviewRow>();
     }
 
     public class PreviewRow
     {
         public bool IsGroupHeader { get; set; }
-        public List<string> Cells { get; set; }
+        public List<string> Cells { get; set; } = new List<string>();
     }
 }

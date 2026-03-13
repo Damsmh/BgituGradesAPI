@@ -56,8 +56,8 @@ namespace BgituGrades
             {
                 options.PayloadSerializerOptions.Converters.Add(
                     new JsonStringEnumConverter());
-            })
-            .AddStackExchangeRedis(redisConnectionString);
+            });
+            //.AddStackExchangeRedis(redisConnectionString);
 
             builder.Services.AddStackExchangeRedisCache(options =>
             {

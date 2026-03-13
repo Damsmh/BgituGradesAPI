@@ -103,7 +103,7 @@ namespace BgituGrades.Services
             catch (Exception ex)
             {
                 await _hubContext.Clients.Group(reportId.ToString())
-                    .SendAsync("Error", ex.Message);
+                    .SendAsync("Error", ex.Message, ex.StackTrace);
             }
         }
 
