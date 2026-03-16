@@ -11,8 +11,6 @@ namespace BgituGrades.Models.Work
         [Required]
         public string? Description { get; set; }
         [Required]
-        public string? Link { get; set; }
-        [Required]
         public int DisciplineId { get; set; }
         [Required]
         public int GroupId { get; set; }
@@ -27,9 +25,7 @@ namespace BgituGrades.Models.Work
         [Required]
         public DateOnly IssuedDate { get; set; }
         [Required]
-        public string Description { get; set; }
-        [Required]
-        public string Link { get; set; }
+        public string? Description { get; set; }
         [Required]
         public int DisciplineId { get; set; }
         [Required]
