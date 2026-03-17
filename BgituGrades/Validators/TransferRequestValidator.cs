@@ -27,7 +27,7 @@ namespace BgituGrades.Validators
         public UpdateTransferRequestValidator()
         {
             RuleFor(x => x.Id)
-                .GreaterThan(0).WithMessage("ID переноса должен быть больше 0");
+                .GreaterThan(0).WithMessage("id переноса должен быть больше 0");
 
             RuleFor(x => x.DisciplineId)
                 .GreaterThan(0).WithMessage("DisciplineId должен быть больше 0");

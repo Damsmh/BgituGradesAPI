@@ -24,7 +24,7 @@ namespace BgituGrades.Validators
         public UpdateWorkRequestValidator()
         {
             RuleFor(x => x.Id)
-                .GreaterThan(0).WithMessage("ID работы должен быть больше 0");
+                .GreaterThan(0).WithMessage("id работы должен быть больше 0");
 
             RuleFor(x => x.Name)
                 .NotEmpty().WithMessage("Имя работы не может быть пустым")

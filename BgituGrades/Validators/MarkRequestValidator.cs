@@ -15,7 +15,7 @@ namespace BgituGrades.Validators
 
             RuleFor(x => x.Value)
                 .NotEmpty().WithMessage("Оценка не может быть пустой")
-                .MaximumLength(1).WithMessage("Оценка не может быть длиннее 10 символов");
+                .MaximumLength(1).WithMessage("Оценка не может быть длиннее 1 символа");
 
             RuleFor(x => x.Date)
                 .NotEmpty().WithMessage("Дата не может быть пустой");
@@ -27,7 +27,7 @@ namespace BgituGrades.Validators
         public UpdateMarkRequestValidator()
         {
             RuleFor(x => x.Id)
-                .GreaterThan(0).WithMessage("ID оценки должен быть больше 0");
+                .GreaterThan(0).WithMessage("id оценки должен быть больше 0");
 
             RuleFor(x => x.StudentId)
                 .GreaterThan(0).WithMessage("StudentId должен быть больше 0");
@@ -37,7 +37,7 @@ namespace BgituGrades.Validators
 
             RuleFor(x => x.Value)
                 .NotEmpty().WithMessage("Оценка не может быть пустой")
-                .MaximumLength(1).WithMessage("Оценка не может быть длиннее 10 символов");
+                .MaximumLength(1).WithMessage("Оценка не может быть длиннее 1 символа");
         }
     }
 

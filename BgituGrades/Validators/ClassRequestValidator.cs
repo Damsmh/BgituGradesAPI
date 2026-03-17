@@ -8,12 +8,12 @@ namespace BgituGrades.Validators
         public CreateClassRequestValidator()
         {
             RuleFor(x => x.WeekDay)
-                .GreaterThan(0).WithMessage("День недели должен быть больше 0")
-                .LessThanOrEqualTo(7).WithMessage("День недели должен быть от 1 до 7");
+                .InclusiveBetween(1, 7)
+                .WithMessage("День недели должен быть от 1 до 7");
 
             RuleFor(x => x.Weeknumber)
-                .GreaterThan(0).WithMessage("Номер недели должен быть больше 0")
-                .LessThanOrEqualTo(2).WithMessage("Номер недели не должен быть больше 2");
+                .InclusiveBetween(1, 2)
+                .WithMessage("Номер недели должен быть 1 или 2");
 
             RuleFor(x => x.DisciplineId)
                 .GreaterThan(0).WithMessage("DisciplineId должен быть больше 0");

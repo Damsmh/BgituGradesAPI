@@ -1,6 +1,9 @@
 ﻿using AspNetCore.Authentication.ApiKey;
 using BgituGrades.Repositories;
 using BgituGrades.Services;
+using BgituGrades.Validators;
+using FluentValidation;
+using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace BgituGrades.Features
 {
@@ -40,6 +43,13 @@ namespace BgituGrades.Features
 
 
             services.AddSingleton<ITokenHasher, TokenHasher>();
+            return services;
+        }
+
+
+        public static IServiceCollection AddApplicationValidation(this IServiceCollection services)
+        {
+            services.AddValidatorsFromAssemblyContaining<CreateClassRequestValidator>();
             return services;
         }
     }

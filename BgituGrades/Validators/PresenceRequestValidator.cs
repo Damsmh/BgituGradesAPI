@@ -23,7 +23,7 @@ namespace BgituGrades.Validators
         public UpdatePresenceRequestValidator()
         {
             RuleFor(x => x.Id)
-                .GreaterThan(0).WithMessage("ID присутствия должен быть больше 0");
+                .GreaterThan(0).WithMessage("id посещаемости должен быть больше 0");
 
             RuleFor(x => x.StudentId)
                 .GreaterThan(0).WithMessage("StudentId должен быть больше 0");

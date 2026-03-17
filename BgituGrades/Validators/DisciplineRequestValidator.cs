@@ -18,7 +18,7 @@ namespace BgituGrades.Validators
         public UpdateDisciplineRequestValidator()
         {
             RuleFor(x => x.Id)
-                .GreaterThan(0).WithMessage("ID дисциплины должен быть больше 0");
+                .GreaterThan(0).WithMessage("id дисциплины должно быть больше 0");
 
             RuleFor(x => x.Name)
                 .NotEmpty().WithMessage("Имя дисциплины не может быть пустым")
@@ -31,7 +31,7 @@ namespace BgituGrades.Validators
         public DeleteDisciplineRequestValidator()
         {
             RuleFor(x => x.Id)
-                .GreaterThan(0).WithMessage("ID дисциплины должен быть больше 0");
+                .GreaterThan(0).WithMessage("id дисциплины должно быть больше 0");
         }
     }
 }

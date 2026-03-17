@@ -10,19 +10,15 @@ namespace BgituGrades.Validators
             RuleFor(x => x.Name)
                 .NotEmpty()
                     .WithMessage("Имя студента не может быть пустым")
-                    .WithErrorCode("STUDENT_NAME_EMPTY")
                 .MaximumLength(255)
-                    .WithMessage("Имя студента не может быть длиннее 255 символов")
-                    .WithErrorCode("STUDENT_NAME_TOO_LONG");
+                    .WithMessage("Имя студента не может быть длиннее 255 символов");
 
             RuleFor(x => x.GroupId)
                 .GreaterThan(0)
-                    .WithMessage("GroupId должен быть больше 0")
-                    .WithErrorCode("INVALID_GROUP_ID");
+                    .WithMessage("GroupId должен быть больше 0");
             RuleFor(x => x.OfficialId)
                 .GreaterThan(0)
-                    .WithMessage("OfficialId должен быть больше 0")
-                    .WithErrorCode("INVALID_OFFICIAL_ID");
+                    .WithMessage("OfficialId должен быть больше 0");
         }
     }
 
@@ -32,21 +28,17 @@ namespace BgituGrades.Validators
         {
             RuleFor(x => x.Id)
                 .GreaterThan(0)
-                    .WithMessage("ID студента должен быть больше 0")
-                    .WithErrorCode("INVALID_STUDENT_ID");
+                    .WithMessage("id студента должен быть больше 0");
 
             RuleFor(x => x.Name)
                 .NotEmpty()
                     .WithMessage("Имя студента не может быть пустым")
-                    .WithErrorCode("STUDENT_NAME_EMPTY")
                 .MaximumLength(255)
-                    .WithMessage("Имя студента не может быть длиннее 255 символов")
-                    .WithErrorCode("STUDENT_NAME_TOO_LONG");
+                    .WithMessage("Имя студента не может быть длиннее 255 символов");
 
             RuleFor(x => x.GroupId)
                 .GreaterThan(0)
-                    .WithMessage("GroupId должен быть больше 0")
-                    .WithErrorCode("INVALID_GROUP_ID");
+                    .WithMessage("GroupId должен быть больше 0");
         }
     }
     public class GetStudentsByGroupRequestValidator : AbstractValidator<GetStudentsByGroupRequest>
@@ -55,8 +47,7 @@ namespace BgituGrades.Validators
         {
             RuleFor(x => x.GroupId)
                 .GreaterThan(0)
-                    .WithMessage("GroupId должен быть больше 0")
-                    .WithErrorCode("INVALID_GROUP_ID");
+                    .WithMessage("GroupId должен быть больше 0");
         }
     }
 }

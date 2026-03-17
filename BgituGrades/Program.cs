@@ -4,9 +4,11 @@ using AspNetCore.Authentication.ApiKey;
 using BgituGrades.Data;
 using BgituGrades.Entities;
 using BgituGrades.Features;
+using BgituGrades.Features.Filters;
 using BgituGrades.Hubs;
 using BgituGrades.Services;
 using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using OfficeOpenXml;
@@ -43,11 +45,15 @@ namespace BgituGrades
                     });
             });
 
+            builder.Services.Configure<ApiBehaviorOptions>(options =>
+            {
+                options.SuppressModelStateInvalidFilter = true;
+            });
+
             builder.Services
                 .AddRepositories()
-                .AddApplicationServices();
-
-            builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+                .AddApplicationServices()
+                .AddApplicationValidation();
 
             builder.Services.AddSignalR()
             .AddJsonProtocol(options =>
@@ -91,7 +97,11 @@ namespace BgituGrades
                 .AddPolicy("Edit", policy => policy.RequireRole("TEACHER", "ADMIN"))
                 .AddPolicy("Admin", policy => policy.RequireRole("ADMIN"));
 
-            builder.Services.AddControllers()
+            builder.Services.AddControllers(
+                options =>
+                {
+                    options.Filters.Add<ValidationFilter>();
+                })
                 .AddJsonOptions(options =>
                 {
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
