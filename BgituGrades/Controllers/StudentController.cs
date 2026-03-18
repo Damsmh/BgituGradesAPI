@@ -73,5 +73,35 @@ namespace BgituGrades.Controllers
 
             return NoContent();
         }
+
+        [HttpDelete("all")]
+        [ApiVersion("2.0")]
+        [Authorize(Policy = "Admin")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> DeleteAllStudents(CancellationToken cancellationToken)
+        {
+            await _studentService.DeleteAllAsync(cancellationToken: cancellationToken);
+            return NoContent();
+        }
+
+        [HttpPost("import")]
+        [ApiVersion("2.0")]
+        [Authorize(Policy = "Admin")]
+        [ProducesResponseType(typeof(ImportResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> ImportStudents(IFormFile file, CancellationToken cancellationToken)
+        {
+            if (file is null || file.Length == 0)
+                return BadRequest("Файл пустой");
+
+            if (!file.FileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
+                return BadRequest("Поддерживается только .xlsx формат");
+
+            await using var stream = file.OpenReadStream();
+            var result = await studentService.ImportStudentsFromXlsxAsync(stream, cancellationToken: cancellationToken);
+
+            return Ok(result);
+        }
     }
 }

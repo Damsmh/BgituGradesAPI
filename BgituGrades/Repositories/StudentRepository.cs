@@ -3,6 +3,7 @@ using BgituGrades.Entities;
 using BgituGrades.Models.Class;
 using BgituGrades.Models.Mark;
 using BgituGrades.Models.Presence;
+using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace BgituGrades.Repositories
@@ -19,6 +20,8 @@ namespace BgituGrades.Repositories
         Task<bool> UpdateStudentAsync(Student entity, CancellationToken cancellationToken);
         Task<bool> DeleteStudentAsync(int id, CancellationToken cancellationToken);
         Task<IEnumerable<Student>> GetStudentsByIdsAsync(int[] studentIds, CancellationToken cancellationToken);
+        Task BulkInsertAsync(List<Student> students, CancellationToken cancellationToken);
+        Task DeleteAllAsync(CancellationToken cancellationToken);
     }
 
     public class StudentRepository(IDbContextFactory<AppDbContext> contextFactory) : IStudentRepository
@@ -164,6 +167,19 @@ namespace BgituGrades.Repositories
                 .Where(s =>  groupIds.Contains(s.GroupId))
                 .ToListAsync(cancellationToken: cancellationToken);
             return entities;
+        }
+
+        public async Task BulkInsertAsync(List<Student> students, CancellationToken cancellationToken)
+        {
+            using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
+            var bulkConfig = new BulkConfig { SetOutputIdentity = true };
+            await context.BulkInsertAsync(students, bulkConfig, cancellationToken: cancellationToken);
+        }
+
+        public async Task DeleteAllAsync(CancellationToken cancellationToken)
+        {
+            using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
+            await context.Students.ExecuteDeleteAsync(cancellationToken: cancellationToken);
         }
     }
 }

@@ -1,6 +1,8 @@
 ﻿using BgituGrades.Data;
 using BgituGrades.Entities;
+using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using System.Text.RegularExpressions;
 
 namespace BgituGrades.Repositories
@@ -17,6 +19,7 @@ namespace BgituGrades.Repositories
         Task DeleteAllAsync(CancellationToken cancellationToken);
         Task AddNewStudentPresences(int studentId, Dictionary<int, IEnumerable<DateOnly>> disciplines, CancellationToken cancellationToken);
         Task<Presence?> GetPresenceByIdAsync(int id, CancellationToken cancellationToken);
+        Task BulkInsertPresencesAsync(Dictionary<int, Dictionary<int, IEnumerable<DateOnly>>> studentDisciplines, CancellationToken cancellationToken);
     }
 
     public class PresenceRepository(AppDbContext dbContext) : IPresenceRepository
@@ -104,13 +107,30 @@ namespace BgituGrades.Repositories
                 }
             }
 
-            await _dbContext.Presences.AddRangeAsync(presences);
+            await _dbContext.Presences.AddRangeAsync(presences, cancellationToken: cancellationToken);
             await _dbContext.SaveChangesAsync(cancellationToken: cancellationToken);
         }
 
         public async Task<Presence?> GetPresenceByIdAsync(int id, CancellationToken cancellationToken)
         {
             return await _dbContext.Presences.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id, cancellationToken: cancellationToken);
+        }
+
+        public async Task BulkInsertPresencesAsync(Dictionary<int, Dictionary<int, IEnumerable<DateOnly>>> studentDisciplines, 
+            CancellationToken cancellationToken)
+        {
+            var presences = studentDisciplines
+            .SelectMany(s => s.Value
+                .SelectMany(d => d.Value.Select(date => new Presence
+                {
+                    StudentId = s.Key,
+                    DisciplineId = d.Key,
+                    Date = date,
+                    IsPresent = PresenceType.PRESENT
+                })))
+            .ToList();
+
+            await _dbContext.BulkInsertAsync(presences, cancellationToken: cancellationToken);
         }
     }
 }
