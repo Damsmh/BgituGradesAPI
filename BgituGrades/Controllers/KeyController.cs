@@ -15,7 +15,7 @@ namespace BgituGrades.Controllers
     {
         private readonly IKeyService _keyService = keyService;
 
-        [HttpGet]
+        [HttpGet("all")]
         [ApiVersion("2.0")]
         [Authorize(Policy = "Admin")]
         [ProducesResponseType(typeof(IEnumerable<KeyResponse>), StatusCodes.Status200OK)]
@@ -35,11 +35,10 @@ namespace BgituGrades.Controllers
             return CreatedAtAction(nameof(GetKey), new { key = key.Key }, key);
         }
 
-        [HttpGet("{key}")]
-        [ApiVersion("1.0")]
-        [Obsolete("deprecated")]
-        [ProducesResponseType(typeof(KeyResponse), StatusCodes.Status201Created)]
-        public async Task<ActionResult<KeyResponse>> GetKey([FromRoute] string key, CancellationToken cancellationToken)
+        [HttpGet()]
+        [ApiVersion("2.0")]
+        [ProducesResponseType(typeof(KeyResponse), StatusCodes.Status200OK)]
+        public async Task<ActionResult<KeyResponse>> GetKey([FromHeader(Name = "key")] string key, CancellationToken cancellationToken)
         {
             var storedKey = await _keyService.GetKeyAsync(key, cancellationToken: cancellationToken);
             return Ok(storedKey);
