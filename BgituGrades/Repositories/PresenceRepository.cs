@@ -22,20 +22,20 @@ namespace BgituGrades.Repositories
         Task BulkInsertPresencesAsync(Dictionary<int, Dictionary<int, IEnumerable<DateOnly>>> studentDisciplines, CancellationToken cancellationToken);
     }
 
-    public class PresenceRepository(AppDbContext dbContext) : IPresenceRepository
+    public class PresenceRepository(IDbContextFactory<AppDbContext> contextFactory) : IPresenceRepository
     {
-        private readonly AppDbContext _dbContext = dbContext;
-
         public async Task<Presence> CreatePresenceAsync(Presence entity, CancellationToken cancellationToken)
         {
-            await _dbContext.Presences.AddAsync(entity, cancellationToken: cancellationToken);
-            await _dbContext.SaveChangesAsync(cancellationToken: cancellationToken);
+            using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
+            await context.Presences.AddAsync(entity, cancellationToken: cancellationToken);
+            await context.SaveChangesAsync(cancellationToken: cancellationToken);
             return entity;
         }
 
         public async Task<IEnumerable<Presence>> GetAllPresencesAsync(CancellationToken cancellationToken)
         {
-            var entities = await _dbContext.Presences
+            using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
+            var entities = await context.Presences
                 .AsNoTracking()
                 .ToListAsync(cancellationToken: cancellationToken);
             return entities;
@@ -43,7 +43,8 @@ namespace BgituGrades.Repositories
 
         public async Task<IEnumerable<Presence>> GetPresencesByDisciplineAndGroupAsync(int disciplineId, int groupId, CancellationToken cancellationToken)
         {
-            var entities = await _dbContext.Presences
+            using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
+            var entities = await context.Presences
                 .Where(p => p.DisciplineId == disciplineId &&
                            p.Student.GroupId == groupId)
                 .AsNoTracking()
@@ -53,7 +54,8 @@ namespace BgituGrades.Repositories
 
         public async Task<bool> DeletePresenceByStudentAndDateAsync(int studentId, DateOnly date, CancellationToken cancellationToken)
         {
-            var result = await _dbContext.Presences
+            using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
+            var result = await context.Presences
                 .Where(p => p.StudentId == studentId && p.Date == date)
                 .ExecuteDeleteAsync(cancellationToken: cancellationToken);
             return result > 0;
@@ -61,18 +63,21 @@ namespace BgituGrades.Repositories
 
         public async Task UpdatePresenceAsync(Presence entity, CancellationToken cancellationToken)
         {
-            _dbContext.Presences.Update(entity);
-            await _dbContext.SaveChangesAsync(cancellationToken: cancellationToken);
+            using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
+            context.Presences.Update(entity);
+            await context.SaveChangesAsync(cancellationToken: cancellationToken);
         }
 
         public async Task DeleteAllAsync(CancellationToken cancellationToken)
         {
-            await _dbContext.Presences.ExecuteDeleteAsync(cancellationToken: cancellationToken);
+            using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
+            await context.Presences.ExecuteDeleteAsync(cancellationToken: cancellationToken);
         }
 
         public async Task<Presence?> GetAsync(int disciplineId, int studentId, DateOnly date, CancellationToken cancellationToken)
         {
-            var presence = await _dbContext.Presences
+            using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
+            var presence = await context.Presences
                 .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.DisciplineId == disciplineId &&
                                          p.StudentId == studentId &&
@@ -82,7 +87,8 @@ namespace BgituGrades.Repositories
 
         public async Task<IEnumerable<Presence>> GetPresencesByDisciplinesAndGroupsAsync(List<int> disciplineIds, List<int> groupIds, CancellationToken cancellationToken)
         {
-            var entities = await _dbContext.Presences
+            using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
+            var entities = await context.Presences
                 .Where(p => disciplineIds.Contains(p.DisciplineId) &&
                            groupIds.Contains(p.Student.GroupId))
                 .AsNoTracking()
@@ -92,6 +98,7 @@ namespace BgituGrades.Repositories
 
         public async Task AddNewStudentPresences(int studentId, Dictionary<int, IEnumerable<DateOnly>> disciplines, CancellationToken cancellationToken)
         {
+            using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
             var presences = new List<Presence>();
             foreach (var discipline in disciplines)
             {
@@ -107,18 +114,19 @@ namespace BgituGrades.Repositories
                 }
             }
 
-            await _dbContext.Presences.AddRangeAsync(presences, cancellationToken: cancellationToken);
-            await _dbContext.SaveChangesAsync(cancellationToken: cancellationToken);
+            await context.Presences.AddRangeAsync(presences, cancellationToken: cancellationToken);
+            await context.SaveChangesAsync(cancellationToken: cancellationToken);
         }
 
         public async Task<Presence?> GetPresenceByIdAsync(int id, CancellationToken cancellationToken)
         {
-            return await _dbContext.Presences.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id, cancellationToken: cancellationToken);
+            return await context.Presences.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id, cancellationToken: cancellationToken);
         }
 
         public async Task BulkInsertPresencesAsync(Dictionary<int, Dictionary<int, IEnumerable<DateOnly>>> studentDisciplines, 
             CancellationToken cancellationToken)
         {
+            using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
             var presences = studentDisciplines
             .SelectMany(s => s.Value
                 .SelectMany(d => d.Value.Select(date => new Presence
@@ -130,7 +138,7 @@ namespace BgituGrades.Repositories
                 })))
             .ToList();
 
-            await _dbContext.BulkInsertAsync(presences, cancellationToken: cancellationToken);
+            await context.BulkInsertAsync(presences, cancellationToken: cancellationToken);
         }
     }
 }

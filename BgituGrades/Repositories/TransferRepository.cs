@@ -15,20 +15,20 @@ namespace BgituGrades.Repositories
         Task<IEnumerable<Transfer>> GetTransfersByGroupAndDisciplineAsync(int groupId, int disciplineId, CancellationToken cancellationToken);
     }
 
-    public class TransferRepository(AppDbContext dbContext) : ITransferRepository
+    public class TransferRepository(IDbContextFactory<AppDbContext> contextFactory) : ITransferRepository
     {
-        private readonly AppDbContext _dbContext = dbContext;
-
         public async Task<Transfer> CreateTransferAsync(Transfer entity, CancellationToken cancellationToken)
         {
-            await _dbContext.Transfers.AddAsync(entity, cancellationToken: cancellationToken);
-            await _dbContext.SaveChangesAsync(cancellationToken: cancellationToken);
+            using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
+            await context.Transfers.AddAsync(entity, cancellationToken: cancellationToken);
+            await context.SaveChangesAsync(cancellationToken: cancellationToken);
             return entity;
         }
 
         public async Task<bool> DeleteTransferAsync(int id, CancellationToken cancellationToken)
         {
-            var result = await _dbContext.Transfers
+            using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
+            var result = await context.Transfers
                 .Where(t => t.Id == id)
                 .ExecuteDeleteAsync(cancellationToken: cancellationToken);
             return result > 0;
@@ -36,13 +36,15 @@ namespace BgituGrades.Repositories
 
         public async Task<Transfer?> GetByIdAsync(int id, CancellationToken cancellationToken)
         {
-            var entity = await _dbContext.Transfers.FindAsync([id], cancellationToken: cancellationToken);
+            using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
+            var entity = await context.Transfers.FindAsync([id], cancellationToken: cancellationToken);
             return entity;
         }
 
         public async Task<IEnumerable<Transfer>> GetAllTransfersAsync(CancellationToken cancellationToken)
         {
-            var entities = await _dbContext.Transfers
+            using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
+            var entities = await context.Transfers
                 .AsNoTracking()
                 .ToListAsync(cancellationToken: cancellationToken);
             return entities;
@@ -50,19 +52,22 @@ namespace BgituGrades.Repositories
 
         public async Task<bool> UpdateTransferAsync(Transfer entity, CancellationToken cancellationToken)
         {
-            _dbContext.Update(entity);
-            await _dbContext.SaveChangesAsync(cancellationToken: cancellationToken);
+            using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
+            context.Update(entity);
+            await context.SaveChangesAsync(cancellationToken: cancellationToken);
             return true;
         }
 
         public async Task DeleteAllAsync(CancellationToken cancellationToken)
         {
-            await _dbContext.Transfers.ExecuteDeleteAsync(cancellationToken: cancellationToken);
+            using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
+            await context.Transfers.ExecuteDeleteAsync(cancellationToken: cancellationToken);
         }
 
         public async Task<IEnumerable<Transfer>> GetTransfersByGroupAndDisciplineAsync(int groupId, int disciplineId, CancellationToken cancellationToken)
         {
-            var entities =  await _dbContext.Transfers
+            using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
+            var entities =  await context.Transfers
                 .Where(t => t.DisciplineId == disciplineId &&
                             t.GroupId == groupId)
                 .AsNoTracking()
