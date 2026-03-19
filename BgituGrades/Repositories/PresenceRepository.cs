@@ -19,7 +19,7 @@ namespace BgituGrades.Repositories
         Task DeleteAllAsync(CancellationToken cancellationToken);
         Task AddNewStudentPresences(int studentId, Dictionary<int, IEnumerable<DateOnly>> disciplines, CancellationToken cancellationToken);
         Task<Presence?> GetPresenceByIdAsync(int id, CancellationToken cancellationToken);
-        Task BulkInsertPresencesAsync(List<Presence> presences, CancellationToken cancellationToken);
+        Task BulkInsertPresencesAsync(Dictionary<int, Dictionary<int, IEnumerable<DateOnly>>> studentDisciplines, CancellationToken cancellationToken);
     }
 
     public class PresenceRepository(IDbContextFactory<AppDbContext> contextFactory) : IPresenceRepository
@@ -124,11 +124,22 @@ namespace BgituGrades.Repositories
             return await context.Presences.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id, cancellationToken: cancellationToken);
         }
 
-        public async Task BulkInsertPresencesAsync(List<Presence> presences,
+        public async Task BulkInsertPresencesAsync(Dictionary<int, Dictionary<int, IEnumerable<DateOnly>>> studentDisciplines, 
             CancellationToken cancellationToken)
         {
             using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
-            await context.BulkInsertOrUpdateAsync(presences, cancellationToken: cancellationToken);
+            var presences = studentDisciplines
+            .SelectMany(s => s.Value
+                .SelectMany(d => d.Value.Select(date => new Presence
+                {
+                    StudentId = s.Key,
+                    DisciplineId = d.Key,
+                    Date = date,
+                    IsPresent = PresenceType.PRESENT
+                })))
+            .ToList();
+
+            await context.BulkInsertAsync(presences, cancellationToken: cancellationToken);
         }
     }
 }

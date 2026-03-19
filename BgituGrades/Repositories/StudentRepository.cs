@@ -173,7 +173,7 @@ namespace BgituGrades.Repositories
         {
             using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
             var bulkConfig = new BulkConfig { SetOutputIdentity = true };
-            await context.BulkInsertOrUpdateAsync(students, bulkConfig, cancellationToken: cancellationToken);
+            await context.BulkInsertAsync(students, bulkConfig, cancellationToken: cancellationToken);
         }
 
         public async Task DeleteAllAsync(CancellationToken cancellationToken)
