@@ -1,5 +1,8 @@
-﻿namespace BgituGrades.Entities
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace BgituGrades.Entities
 {
+    [Index(nameof(GroupId), nameof(DisciplineId))]
     public class Transfer
     {
         public int Id { get; set; }

@@ -1,5 +1,9 @@
-﻿namespace BgituGrades.Entities
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace BgituGrades.Entities
 {
+    [Index(nameof(StudentId), nameof(DisciplineId), nameof(Date))]
+    [Index(nameof(DisciplineId))]
     public class Presence
     {
         public int Id { get; set; }
