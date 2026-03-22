@@ -93,17 +93,29 @@ namespace BgituGrades.Repositories
             List<int> groupIds, CancellationToken cancellationToken)
         {
             using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
-            var disciplines = await context.Classes
+
+            var classes = await context.Classes
                 .Where(c => groupIds.Contains(c.GroupId))
-                .Select(c => new { c.GroupId, c.Discipline })
+                .Select(c => new { c.GroupId, c.DisciplineId })
+                .AsNoTracking()
                 .Distinct()
                 .ToListAsync(cancellationToken);
 
-            return disciplines
-                .GroupBy(x => x.GroupId)
+            var disciplineIds = classes.Select(c => c.DisciplineId).Distinct().ToList();
+
+            var disciplines = await context.Disciplines
+                .Where(d => disciplineIds.Contains(d.Id))
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+
+            var disciplineById = disciplines.ToDictionary(d => d.Id);
+
+            return classes
+                .GroupBy(c => c.GroupId)
                 .ToDictionary(
                     g => g.Key,
-                    g => g.Select(x => x.Discipline!).DistinctBy(d => d.Id) as IEnumerable<Discipline>);
+                    g => g.Select(c => disciplineById[c.DisciplineId])
+                          .DistinctBy(d => d.Id) as IEnumerable<Discipline>);
         }
     }
 }
