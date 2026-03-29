@@ -7,7 +7,6 @@
     }
     public class ReportPreviewDto
     {
-        public List<string> Headers { get; set; } = new List<string>();
         public List<PreviewRow> Rows { get; set; } = new List<PreviewRow>();
     }
 

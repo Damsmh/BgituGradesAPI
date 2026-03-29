@@ -127,23 +127,8 @@ namespace BgituGrades.Services
                                .OrderBy(d => d.Name).ToList() ?? new List<Discipline>()
             );
 
-            var cellGroups = worksheet.Cells[1, 1];
-            cellGroups.Value = "Группы";
-            cellGroups.Style.Font.Bold = true;
-            cellGroups.Style.Font.Color.SetColor(System.Drawing.Color.White);
-            cellGroups.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-            cellGroups.Style.Fill.BackgroundColor.SetColor(headColor);
-            cellGroups.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
 
-            int maxCols = disciplinesByGroup.Any() ? disciplinesByGroup.Max(g => g.Value.Count) : 1;
-            var disciplinesHeaderRange = worksheet.Cells[1, 2, 1, maxCols + 1];
-            disciplinesHeaderRange.Merge = true;
-            disciplinesHeaderRange.Value = "Дисциплины";
-            disciplinesHeaderRange.Style.Font.Bold = true;
-            disciplinesHeaderRange.Style.Font.Color.SetColor(System.Drawing.Color.White);
-            disciplinesHeaderRange.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-            disciplinesHeaderRange.Style.Fill.BackgroundColor.SetColor(headColor);
-            disciplinesHeaderRange.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+            int maxCols = disciplinesByGroup.Count != 0 ? disciplinesByGroup.Max(g => g.Value.Count) : 1;
 
             var allMarks = await _markRepository.GetMarksByDisciplinesAndGroupsAsync(disciplines.Select(d => d.Id).ToList(), sortedGroups.Select(g => g.Id).ToList(), cancellationToken: cancellationToken);
             var markDict = allMarks
@@ -274,22 +259,8 @@ namespace BgituGrades.Services
                                .OrderBy(d => d.Name).ToList() ?? new List<Discipline>()
             );
 
-            worksheet.Cells[1, 1].Value = "Группы";
-            worksheet.Cells[1, 1].Style.Font.Bold = true;
-            worksheet.Cells[1, 1].Style.Font.Color.SetColor(System.Drawing.Color.White);
-            worksheet.Cells[1, 1].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-            worksheet.Cells[1, 1].Style.Fill.BackgroundColor.SetColor(headColor);
-            worksheet.Cells[1, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
 
-            int maxCols = disciplinesByGroup.Any() ? disciplinesByGroup.Max(g => g.Value.Count) : 1;
-            var headRange = worksheet.Cells[1, 2, 1, maxCols + 1];
-            headRange.Merge = true;
-            headRange.Value = "Дисциплины";
-            headRange.Style.Font.Bold = true;
-            headRange.Style.Font.Color.SetColor(System.Drawing.Color.White);
-            headRange.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-            headRange.Style.Fill.BackgroundColor.SetColor(headColor);
-            headRange.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+            int maxCols = disciplinesByGroup.Count != 0 ? disciplinesByGroup.Max(g => g.Value.Count) : 1;
 
             var allPresences = await _presenceRepository.GetPresencesByDisciplinesAndGroupsAsync(disciplines.Select(d => d.Id).ToList(), sortedGroups.Select(g => g.Id).ToList(), cancellationToken: cancellationToken);
             var presenceDict = allPresences
