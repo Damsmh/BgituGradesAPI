@@ -30,6 +30,11 @@ namespace BgituGrades.Features
                     .Split(',', StringSplitOptions.RemoveEmptyEntries)
                     .Select(id => id.Trim())
                     .ToList();
+                if (queryGroupIds.Count == 0 && !httpContext.Items.ContainsKey("GroupId"))
+                {
+                    context.Succeed(requirement);
+                    return Task.CompletedTask;
+                }
 
                 if (queryGroupIds.Count != 0 && queryGroupIds.All(id => id == groupClaim))
                 {
