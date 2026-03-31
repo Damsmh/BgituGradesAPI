@@ -62,7 +62,7 @@ namespace BgituGrades.Repositories
             using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
             return await context.Disciplines
                 .Where(d => d.Classes.Any(c => groupIds.Contains(c.GroupId)))
-                .Include(d => d.Classes)
+                    .Include(d => d.Classes.Where(c => groupIds.Contains(c.GroupId)))
                 .AsNoTracking()
                 .Distinct()
                 .ToListAsync(cancellationToken: cancellationToken);
