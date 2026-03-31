@@ -60,18 +60,47 @@ namespace BgituGrades.Services
 
         public async Task<IEnumerable<DisciplineResponse>?> GetDisciplineByGroupIdAsync(int[] groupIds, CancellationToken cancellationToken)
         {
-            var cacheKey = $"{DisciplineByGroupKey}{groupIds}";
-            var cached = await GetFromCacheAsync<List<DisciplineResponse>>(cacheKey);
-            if (cached != null)
-                return cached;
+            var results = new List<DisciplineResponse>();
+            var missingIds = new List<int>();
 
-            var entities = await _disciplineRepository.GetByGroupIdsAsync(groupIds, cancellationToken: cancellationToken);
-            if (entities == null)
-                return null;
+            foreach (var id in groupIds)
+            {
+                var singleCacheKey = $"{DisciplineByGroupKey}:{id}";
+                var cached = await GetFromCacheAsync<List<DisciplineResponse>>(singleCacheKey);
 
-            var result = _mapper.Map<List<DisciplineResponse>>(entities);
-            await SetCacheAsync(cacheKey, result, TimeSpan.FromHours(2));
-            return result;
+                if (cached != null)
+                {
+                    results.AddRange(cached);
+                }
+                else
+                {
+                    missingIds.Add(id);
+                }
+            }
+
+            if (missingIds.Count != 0)
+            {
+                var entities = await _disciplineRepository.GetByGroupIdsAsync([.. missingIds], cancellationToken);
+
+                if (entities != null && entities.Any())
+                {
+                    
+
+                    foreach (var groupId in missingIds)
+                    {
+                        var disciplinesForGroup = entities
+                            .Where(d => d.Classes != null && d.Classes.Any(c => c.GroupId == groupId))
+                            .ToList();
+                        var mappedDisciplines = _mapper.Map<List<DisciplineResponse>>(disciplinesForGroup);
+
+                        await SetCacheAsync($"{DisciplineByGroupKey}:{groupId}", mappedDisciplines, TimeSpan.FromHours(2));
+
+                        results.AddRange(mappedDisciplines);
+                    }
+                }
+            }
+
+            return results;
         }
 
         public async Task<DisciplineResponse?> GetDisciplineByIdAsync(int id, CancellationToken cancellationToken)

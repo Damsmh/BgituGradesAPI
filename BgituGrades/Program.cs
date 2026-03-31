@@ -7,7 +7,6 @@ using BgituGrades.Features;
 using BgituGrades.Features.Filters;
 using BgituGrades.Hubs;
 using BgituGrades.Services;
-using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;

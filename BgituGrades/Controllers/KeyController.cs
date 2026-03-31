@@ -35,7 +35,7 @@ namespace BgituGrades.Controllers
             return CreatedAtAction(nameof(GetKey), new { key = key.Key }, key);
         }
 
-        [HttpGet()]
+        [HttpGet]
         [ApiVersion("2.0")]
         [ProducesResponseType(typeof(KeyResponse), StatusCodes.Status200OK)]
         public async Task<ActionResult<KeyResponse>> GetKey([FromHeader(Name = "key")] string key, CancellationToken cancellationToken)
