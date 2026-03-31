@@ -83,7 +83,7 @@ namespace BgituGrades.Services
 
         public async Task<IEnumerable<StudentResponse>> GetStudentsByGroupAsync(GetStudentsByGroupRequest request, CancellationToken cancellationToken)
         {
-            var entities = await _studentRepository.GetStudentsByGroupAsync(request.GroupId, cancellationToken: cancellationToken);
+            var entities = await _studentRepository.GetStudentsByGroupIdsAsync(request.GroupIds, cancellationToken: cancellationToken);
             return _mapper.Map<IEnumerable<StudentResponse>>(entities);
         }
 

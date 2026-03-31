@@ -13,7 +13,7 @@ namespace BgituGrades.Controllers
     {
         private readonly IStudentService _studentService = studentService;
 
-        [HttpGet()]
+        [HttpGet]
         [ApiVersion("2.0")]
         [Authorize(Policy = "ViewOnly")]
         [ProducesResponseType(typeof(IEnumerable<StudentResponse>), StatusCodes.Status200OK)]

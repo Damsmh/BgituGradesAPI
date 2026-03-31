@@ -13,6 +13,15 @@ namespace BgituGrades.Validators
         }
     }
 
+    public class GetDisciplineRequestValidator : AbstractValidator<GetDisciplineByGroupIdsRequest>
+    {
+        public GetDisciplineRequestValidator()
+        {
+            RuleFor(x => x.GroupIds)
+                .NotEmpty().WithMessage("groupIds не может быть пустым");
+        }
+    }
+
     public class UpdateDisciplineRequestValidator : AbstractValidator<UpdateDisciplineRequest>
     {
         public UpdateDisciplineRequestValidator()

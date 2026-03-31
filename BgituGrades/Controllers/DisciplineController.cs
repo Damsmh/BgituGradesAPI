@@ -27,9 +27,9 @@ namespace BgituGrades.Controllers
         [ApiVersion("2.0")]
         [Authorize(Policy = "ViewOnly")]
         [ProducesResponseType(typeof(IEnumerable<DisciplineResponse>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<DisciplineResponse>>> GetDisciplinesByGroupId([FromQuery] int groupId, CancellationToken cancellationToken)
+        public async Task<ActionResult<IEnumerable<DisciplineResponse>>> GetDisciplinesByGroupIds([FromQuery] GetDisciplineByGroupIdsRequest request, CancellationToken cancellationToken)
         {
-            var Disciplines = await _disciplineService.GetDisciplineByGroupIdAsync(groupId, cancellationToken: cancellationToken);
+            var Disciplines = await _disciplineService.GetDisciplineByGroupIdAsync(request.GroupIds, cancellationToken: cancellationToken);
             return Ok(Disciplines);
         }
 

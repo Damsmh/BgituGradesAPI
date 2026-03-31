@@ -45,9 +45,9 @@ namespace BgituGrades.Validators
     {
         public GetStudentsByGroupRequestValidator()
         {
-            RuleFor(x => x.GroupId)
-                .GreaterThan(0)
-                    .WithMessage("GroupId должен быть больше 0");
+            RuleFor(x => x.GroupIds)
+                .NotEmpty()
+                    .WithMessage("GroupIds не может быть пустым");
         }
     }
 }

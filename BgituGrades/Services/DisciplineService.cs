@@ -13,7 +13,7 @@ namespace BgituGrades.Services
         Task<IEnumerable<DisciplineResponse>> GetAllDisciplinesAsync(CancellationToken cancellationToken);
         Task<DisciplineResponse> CreateDisciplineAsync(CreateDisciplineRequest request, CancellationToken cancellationToken);
         Task<DisciplineResponse?> GetDisciplineByIdAsync(int id, CancellationToken cancellationToken);
-        Task<IEnumerable<DisciplineResponse>?> GetDisciplineByGroupIdAsync(int groupId, CancellationToken cancellationToken);
+        Task<IEnumerable<DisciplineResponse>?> GetDisciplineByGroupIdAsync(int[] groupId, CancellationToken cancellationToken);
         Task<bool> UpdateDisciplineAsync(UpdateDisciplineRequest request, CancellationToken cancellationToken);
         Task<bool> DeleteDisciplineAsync(int id, CancellationToken cancellationToken);
         Task<IEnumerable<DisciplineDTO>> GetAllDisciplinesDtoAsync(CancellationToken cancellationToken);
@@ -58,14 +58,14 @@ namespace BgituGrades.Services
             return result;
         }
 
-        public async Task<IEnumerable<DisciplineResponse>?> GetDisciplineByGroupIdAsync(int groupId, CancellationToken cancellationToken)
+        public async Task<IEnumerable<DisciplineResponse>?> GetDisciplineByGroupIdAsync(int[] groupIds, CancellationToken cancellationToken)
         {
-            var cacheKey = $"{DisciplineByGroupKey}{groupId}";
+            var cacheKey = $"{DisciplineByGroupKey}{groupIds}";
             var cached = await GetFromCacheAsync<List<DisciplineResponse>>(cacheKey);
             if (cached != null)
                 return cached;
 
-            var entities = await _disciplineRepository.GetByGroupIdAsync(groupId, cancellationToken: cancellationToken);
+            var entities = await _disciplineRepository.GetByGroupIdsAsync(groupIds, cancellationToken: cancellationToken);
             if (entities == null)
                 return null;
 

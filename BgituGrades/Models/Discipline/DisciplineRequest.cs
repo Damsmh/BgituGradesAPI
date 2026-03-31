@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using BgituGrades.Features;
+using System.ComponentModel.DataAnnotations;
 
 namespace BgituGrades.Models.Discipline
 {
@@ -20,5 +21,11 @@ namespace BgituGrades.Models.Discipline
     {
         [Required]
         public int Id { get; set; }
+    }
+
+    public class GetDisciplineByGroupIdsRequest
+    {
+        [Required]
+        public required CommaSeparatedIntArray GroupIds { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using BgituGrades.Features;
+using System.ComponentModel.DataAnnotations;
 
 namespace BgituGrades.Models.Student
 {
@@ -9,7 +10,7 @@ namespace BgituGrades.Models.Student
     public class GetStudentsByGroupRequest
     {
         [Required]
-        public int GroupId { get; set; }
+        public required CommaSeparatedIntArray GroupIds { get; set; }
     }
 
     public class CreateStudentRequest
