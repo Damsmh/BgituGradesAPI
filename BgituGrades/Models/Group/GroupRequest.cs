@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using BgituGrades.Entities;
 
 namespace BgituGrades.Models.Group
 {
@@ -23,6 +24,7 @@ namespace BgituGrades.Models.Group
         public DateOnly StudyEndDate { get; set; }
         [Required]
         public int StartWeekNumber { get; set; }
+        public SubGroup? SubGroup { get; set; }
     }
 
     public class UpdateGroupRequest
@@ -37,6 +39,7 @@ namespace BgituGrades.Models.Group
         public DateOnly StudyEndDate { get; set; }
         [Required]
         public int StartWeekNumber { get; set; }
+        public SubGroup? SubGroup { get; set; }
     }
 
     public class DeleteGroupRequest

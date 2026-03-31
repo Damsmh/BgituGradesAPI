@@ -1,4 +1,6 @@
-﻿namespace BgituGrades.Models.Group
+﻿using BgituGrades.Entities;
+
+namespace BgituGrades.Models.Group
 {
     public class GroupResponse
     {
@@ -7,5 +9,6 @@
         public DateOnly StudyStartDate { get; set; }
         public DateOnly StudyEndDate { get; set; }
         public int StartWeekNumber { get; set; }
+        public SubGroup? SubGroup { get; set; }
     }
 }
