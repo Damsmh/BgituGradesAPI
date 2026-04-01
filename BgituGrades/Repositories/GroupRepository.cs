@@ -68,7 +68,7 @@ namespace BgituGrades.Repositories
                 .Distinct()
                 .Select(r => new Group { Id = r.GroupId, Name = r.GroupName })
                 .ToListAsync(cancellationToken: cancellationToken);
-            return _mapper.Map<List<Group>>(archivedGroups);
+            return archivedGroups;
         }
 
         public async Task<Group?> GetByIdAsync(int id, CancellationToken cancellationToken)
