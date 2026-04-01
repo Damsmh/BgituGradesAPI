@@ -48,7 +48,7 @@ namespace BgituGrades.Controllers
         [ApiVersion("2.0")]
         [Authorize(Policy = "Edit")]
         [ProducesResponseType(typeof(SharedKeyResponse), StatusCodes.Status200OK)]
-        public async Task<ActionResult<KeyResponse>> CreateSharedKeyV2([FromBody] CreateSharedKeyRequest request, CancellationToken cancellationToken)
+        public async Task<ActionResult<KeyResponse>> CreateSharedKeyV2([FromQuery] CreateSharedKeyRequest request, CancellationToken cancellationToken)
         {
             var key = await _keyService.GenerateKeyAsync(Role.STUDENT, groupId: request.GroupId, cancellationToken: cancellationToken);
             var response = new SharedKeyResponse
