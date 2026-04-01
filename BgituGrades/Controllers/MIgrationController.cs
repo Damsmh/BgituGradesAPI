@@ -21,5 +21,20 @@ namespace BgituGrades.Controllers
             await _migrationService.DeleteAll(cancellationToken: cancellationToken);
             return NoContent();
         }
+
+        [HttpPost("migrate")]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<IActionResult> MigrateAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                await _migrationService.ArchiveCurrentSemesterAsync(cancellationToken);
+                return Ok("Архивация успешно завершена.");
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(ex.Message);
+            }
+        }
     }
 }

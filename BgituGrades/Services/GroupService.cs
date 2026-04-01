@@ -18,6 +18,7 @@ namespace BgituGrades.Services
         Task<bool> DeleteGroupAsync(int id, CancellationToken cancellationToken);
         Task<IEnumerable<GroupDTO>> GetAllGroupsDtoAsync(CancellationToken cancellationToken);
         Task<IEnumerable<GroupDTO>> GetGroupsDtoByDisciplineAsync(int disciplineId, CancellationToken cancellationToken);
+        Task<IEnumerable<GroupResponse>> GetArchivedGroupsByPeriodAsync(int semester, int year, CancellationToken cancellationToken);
         Task<GroupDTO?> GetGroupDtoByIdAsync(int id, CancellationToken cancellationToken);
     }
 
@@ -108,6 +109,13 @@ namespace BgituGrades.Services
             return entity == null ? null : _mapper.Map<GroupDTO>(entity);
         }
 
+        public async Task<IEnumerable<GroupResponse>> GetArchivedGroupsByPeriodAsync(int semester, int year, CancellationToken cancellationToken)
+        {
+            var archived = _groupRepository.GetArchivedByPeriod(semester, year, cancellationToken);
+            var results = _mapper.Map<List<GroupResponse>>(archived);
+            return results;
+        }
+
         private async Task<T?> GetFromCacheAsync<T>(string key)
         {
             try
@@ -136,5 +144,7 @@ namespace BgituGrades.Services
 
             }
         }
+
+        
     }
 }

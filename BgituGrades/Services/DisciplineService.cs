@@ -18,6 +18,7 @@ namespace BgituGrades.Services
         Task<bool> DeleteDisciplineAsync(int id, CancellationToken cancellationToken);
         Task<IEnumerable<DisciplineDTO>> GetAllDisciplinesDtoAsync(CancellationToken cancellationToken);
         Task<IEnumerable<DisciplineDTO>?> GetDisciplinesDtoByGroupIdAsync(int groupId, CancellationToken cancellationToken);
+        Task<IEnumerable<DisciplineResponse>?> GetArchivedDisciplinesByGroupIdsAsync(int[] groupIds, CancellationToken cancellationToken);
         Task<DisciplineDTO?> GetDisciplineDtoByIdAsync(int id, CancellationToken cancellationToken);
     }
     public class DisciplineService(IDisciplineRepository disciplineRepository, IMapper mapper, IDistributedCache cache) : IDisciplineService
@@ -103,6 +104,13 @@ namespace BgituGrades.Services
             return results.DistinctBy(d => d.Id);
         }
 
+        public async Task<IEnumerable<DisciplineResponse>?> GetArchivedDisciplinesByGroupIdsAsync(int[] groupIds, CancellationToken cancellationToken)
+        {
+            var disciplines = await _disciplineRepository.GetArchivedByGroupIdsAsync(groupIds, cancellationToken);
+            var results = _mapper.Map<List<DisciplineResponse>>(disciplines);
+            return results;
+        }
+
         public async Task<DisciplineResponse?> GetDisciplineByIdAsync(int id, CancellationToken cancellationToken)
         {
             var entity = await _disciplineRepository.GetByIdAsync(id, cancellationToken: cancellationToken);
@@ -166,6 +174,8 @@ namespace BgituGrades.Services
 
             }
         }
+
+        
     }
 
 }

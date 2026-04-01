@@ -33,6 +33,16 @@ namespace BgituGrades.Controllers
             return Ok(disciplines);
         }
 
+        [HttpGet("archived")]
+        [ApiVersion("2.0")]
+        [Authorize(Policy = "ViewOnly")]
+        [ProducesResponseType(typeof(IEnumerable<DisciplineResponse>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<DisciplineResponse>>> GetArchivedDisciplinesByGroupIds([FromQuery] GetDisciplineByGroupIdsRequest request, CancellationToken cancellationToken)
+        {
+            var disciplines = await _disciplineService.GetArchivedDisciplinesByGroupIdsAsync(request.GroupIds, cancellationToken: cancellationToken);
+            return Ok(disciplines);
+        }
+
         [HttpPost]
         [ApiVersion("2.0")]
         [Authorize(Policy = "Admin")]

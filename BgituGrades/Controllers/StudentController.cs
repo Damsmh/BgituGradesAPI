@@ -23,6 +23,17 @@ namespace BgituGrades.Controllers
             return Ok(students);
         }
 
+        [HttpGet("archived")]
+        [ApiVersion("2.0")]
+        [Authorize(Policy = "ViewOnly")]
+        [ProducesResponseType(typeof(IEnumerable<StudentResponse>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<StudentResponse>>> GetArchivedStudents([FromQuery] GetStudentsByGroupRequest request, CancellationToken cancellationToken)
+        {
+            var students = await _studentService.GetArchivedStudentsByGroupAsync(request, cancellationToken: cancellationToken);
+            return Ok(students);
+        }
+
+
         [HttpPost]
         [ApiVersion("2.0")]
         [Authorize(Policy = "Edit")]

@@ -34,6 +34,16 @@ namespace BgituGrades.Controllers
             return Ok(groups);
         }
 
+        [HttpGet("archived")]
+        [ApiVersion("2.0")]
+        [Authorize(Policy = "ViewOnly")]
+        [ProducesResponseType(typeof(IEnumerable<GroupResponse>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<GroupResponse>>> GetArchivedGroups([FromQuery] GetGroupsByPeriodRequest request, CancellationToken cancellationToken)
+        {
+            var groups = await _groupService.GetArchivedGroupsByPeriodAsync(semester: request.Semester, year: request.Year, cancellationToken: cancellationToken);
+            return Ok(groups);
+        }
+
         [HttpPost]
         [ApiVersion("2.0")]
         [Authorize(Policy = "Admin")]

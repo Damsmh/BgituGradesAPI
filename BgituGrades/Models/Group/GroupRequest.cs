@@ -14,6 +14,14 @@ namespace BgituGrades.Models.Group
         public int DisciplineId { get; set; }
     }
 
+    public class GetGroupsByPeriodRequest
+    {
+        [Required]
+        public int Semester { get; set; }
+        [Required]
+        public int Year { get; set; }
+    }
+
     public class CreateGroupRequest
     {
         [Required]

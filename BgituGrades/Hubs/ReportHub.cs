@@ -1,11 +1,13 @@
 ﻿using BgituGrades.Models.Report;
 using BgituGrades.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Saunter.Attributes;
 
 namespace BgituGrades.Hubs
 {
     [AsyncApi]
+    [Authorize(Policy = "Edit")]
     public class ReportHub(IReportService reportService) : Hub
     {
         private readonly IReportService _reportService = reportService;

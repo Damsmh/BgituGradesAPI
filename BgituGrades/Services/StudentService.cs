@@ -11,6 +11,7 @@ namespace BgituGrades.Services
     {
         Task<IEnumerable<StudentResponse>> GetAllStudentsAsync(CancellationToken cancellationToken);
         Task<IEnumerable<StudentResponse>> GetStudentsByGroupAsync(GetStudentsByGroupRequest request, CancellationToken cancellationToken);
+        Task<IEnumerable<StudentResponse>> GetArchivedStudentsByGroupAsync(GetStudentsByGroupRequest request, CancellationToken cancellationToken);
         Task<StudentResponse> CreateStudentAsync(CreateStudentRequest request, CancellationToken cancellationToken);
         Task<StudentResponse?> GetStudentByIdAsync(int id, CancellationToken cancellationToken);
         Task<bool> UpdateStudentAsync(UpdateStudentRequest request, CancellationToken cancellationToken);
@@ -296,6 +297,13 @@ namespace BgituGrades.Services
         public async Task DeleteAllAsync(CancellationToken cancellationToken)
         {
             await studentRepository.DeleteAllAsync(cancellationToken);
+        }
+
+        public async Task<IEnumerable<StudentResponse>> GetArchivedStudentsByGroupAsync(GetStudentsByGroupRequest request, CancellationToken cancellationToken)
+        {
+            var students = _studentRepository.GetArchivedByGroupIdsAsync(request.GroupIds, cancellationToken);
+            var results = _mapper.Map<List<StudentResponse>>(students);
+            return results;
         }
     }
 }

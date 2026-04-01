@@ -16,6 +16,7 @@ namespace BgituGrades.Data
         public DbSet<Work> Works { get; set; }
         public DbSet<Transfer> Transfers { get; set; }
         public DbSet<Setting> Settings { get; set; }
+        public DbSet<ReportSnapshot> ReportSnapshots { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

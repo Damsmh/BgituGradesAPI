@@ -1,4 +1,5 @@
-﻿using BgituGrades.Data;
+﻿using AutoMapper;
+using BgituGrades.Data;
 using BgituGrades.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,6 +11,7 @@ namespace BgituGrades.Repositories
         Task<Discipline?> GetByIdAsync(int id, CancellationToken cancellationToken);
         Task<IEnumerable<Discipline?>> GetByGroupIdAsync(int groupId, CancellationToken cancellationToken);
         Task<IEnumerable<Discipline?>> GetByGroupIdsAsync(IEnumerable<int> groupIds, CancellationToken cancellationToken);
+        Task<IEnumerable<Discipline>> GetArchivedByGroupIdsAsync(IEnumerable<int> groupIds, CancellationToken cancellationToken);
         Task<bool> UpdateDisciplineAsync(Discipline entity, CancellationToken cancellationToken);
         Task<bool> DeleteDisciplineAsync(int id, CancellationToken cancellationToken);
         Task DeleteAllAsync(CancellationToken cancellationToken);
@@ -118,6 +120,23 @@ namespace BgituGrades.Repositories
                     g => g.Key,
                     g => g.Select(c => disciplineById[c.DisciplineId])
                           .DistinctBy(d => d.Id) as IEnumerable<Discipline>);
+        }
+
+        public async Task<IEnumerable<Discipline>> GetArchivedByGroupIdsAsync(IEnumerable<int> groupIds, CancellationToken cancellationToken)
+        {
+            using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
+            var archivedDisciplines = await context.ReportSnapshots
+                .AsNoTracking()
+                .Where(r => groupIds.Contains(r.GroupId))
+                .Select(r => new 
+                {
+                    r.DisciplineId,
+                    r.DisciplineName
+                })
+                .Distinct()
+                .Select(r => new Discipline { Id = r.DisciplineId, Name = r.DisciplineName})
+                .ToListAsync(cancellationToken: cancellationToken);
+            return archivedDisciplines;
         }
     }
 }
