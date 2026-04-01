@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BgituGrades.Controllers
 {
-    [Route("api/clearDb")]
+    [Route("api")]
     [ApiVersion("2.0")]
     [Authorize(Policy = "Admin")]
     [ApiController]
@@ -14,7 +14,7 @@ namespace BgituGrades.Controllers
     {
         private readonly IMigrationService _migrationService = migrationService;
 
-        [HttpDelete]
+        [HttpDelete("clearDb")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> Delete(CancellationToken cancellationToken)
         {
