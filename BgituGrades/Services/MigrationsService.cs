@@ -88,16 +88,18 @@ namespace BgituGrades.Services
             var disciplineDict = disciplines.ToDictionary(d => d.Id);
             var studentGroupDict = students.ToDictionary(s => s.Id, s => s.GroupId);
 
-            var groupDisciplinePairs = students
-                .Select(s => s.GroupId)
+            var allClasses = await db.Classes.AsNoTracking().ToListAsync(cancellationToken);
+            var allTransfers = await db.Transfers.AsNoTracking().ToListAsync(cancellationToken);
+
+            var groupDisciplinePairs = allClasses
+                .Select(c => (GroupId: c.GroupId, DisciplineId: c.DisciplineId))
                 .Distinct()
-                .SelectMany(gId => disciplines.Select(d => (GroupId: gId, DisciplineId: d.Id)))
                 .ToList();
 
             var sw = System.Diagnostics.Stopwatch.StartNew();
 
-            var allClasses = await db.Classes.AsNoTracking().ToListAsync(cancellationToken);
-            var allTransfers = await db.Transfers.AsNoTracking().ToListAsync(cancellationToken);
+            
+            
             Console.WriteLine($"Загрузка классов и трансферов: {sw.ElapsedMilliseconds}ms");
             sw.Restart();
 
@@ -139,9 +141,11 @@ namespace BgituGrades.Services
                     g => g.Average(m => m.ParsedValue!.Value).ToString("0.0", CultureInfo.InvariantCulture)
                 );
 
-            var pairs = students
-                .SelectMany(s => disciplines.Select(d => (StudentId: s.Id, DisciplineId: d.Id)))
-                .Distinct();
+            var pairs = allClasses
+            .SelectMany(c => students
+                .Where(s => s.GroupId == c.GroupId)
+                .Select(s => (StudentId: s.Id, DisciplineId: c.DisciplineId)))
+            .Distinct();
 
             var archives = pairs.Select(pair =>
             {
