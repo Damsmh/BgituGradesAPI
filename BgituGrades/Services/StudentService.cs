@@ -9,16 +9,12 @@ namespace BgituGrades.Services
 {
     public interface IStudentService
     {
-        Task<IEnumerable<StudentResponse>> GetAllStudentsAsync(CancellationToken cancellationToken);
         Task<IEnumerable<StudentResponse>> GetStudentsByGroupAsync(GetStudentsByGroupRequest request, CancellationToken cancellationToken);
         Task<IEnumerable<StudentResponse>> GetArchivedStudentsByGroupAsync(GetStudentsByGroupRequest request, CancellationToken cancellationToken);
         Task<StudentResponse> CreateStudentAsync(CreateStudentRequest request, CancellationToken cancellationToken);
         Task<StudentResponse?> GetStudentByIdAsync(int id, CancellationToken cancellationToken);
         Task<bool> UpdateStudentAsync(UpdateStudentRequest request, CancellationToken cancellationToken);
         Task<bool> DeleteStudentAsync(int id, CancellationToken cancellationToken);
-        Task<IEnumerable<StudentDTO>> GetAllStudentsDtoAsync(CancellationToken cancellationToken);
-        Task<IEnumerable<StudentDTO>> GetStudentsDtoByGroupAsync(int groupId, CancellationToken cancellationToken);
-        Task<StudentDTO?> GetStudentDtoByIdAsync(int id, CancellationToken cancellationToken);
         Task<ImportResult> ImportStudentsFromXlsxAsync(Stream streamFile, CancellationToken cancellationToken);
         Task DeleteAllAsync(CancellationToken cancellationToken);
     }
@@ -69,12 +65,6 @@ namespace BgituGrades.Services
             return await _studentRepository.DeleteStudentAsync(id, cancellationToken: cancellationToken);
         }
 
-        public async Task<IEnumerable<StudentResponse>> GetAllStudentsAsync(CancellationToken cancellationToken)
-        {
-            var entities = await _studentRepository.GetAllStudentsAsync(cancellationToken: cancellationToken);
-            return _mapper.Map<IEnumerable<StudentResponse>>(entities);
-        }
-
         public async Task<StudentResponse?> GetStudentByIdAsync(int id, CancellationToken cancellationToken)
         {
             var entity = await _studentRepository.GetByIdAsync(id, cancellationToken: cancellationToken);
@@ -93,24 +83,6 @@ namespace BgituGrades.Services
             return await _studentRepository.UpdateStudentAsync(entity, cancellationToken: cancellationToken);
         }
 
-        public async Task<IEnumerable<StudentDTO>> GetAllStudentsDtoAsync(CancellationToken cancellationToken)
-        {
-            var entities = await _studentRepository.GetAllStudentsAsync(cancellationToken: cancellationToken);
-            return _mapper.Map<IEnumerable<StudentDTO>>(entities);
-        }
-
-        public async Task<IEnumerable<StudentDTO>> GetStudentsDtoByGroupAsync(int groupId, CancellationToken cancellationToken)
-        {
-            var entities = await _studentRepository.GetStudentsByGroupAsync(groupId, cancellationToken: cancellationToken);
-            return _mapper.Map<IEnumerable<StudentDTO>>(entities);
-        }
-
-        public async Task<StudentDTO?> GetStudentDtoByIdAsync(int id, CancellationToken cancellationToken)
-        {
-            var entity = await _studentRepository.GetByIdAsync(id, cancellationToken: cancellationToken);
-            return entity == null ? null : _mapper.Map<StudentDTO>(entity);
-        }
-
         public async Task<ImportResult> ImportStudentsFromXlsxAsync(Stream fileStream, CancellationToken cancellationToken)
         {
             var groupsByName = await _groupService
@@ -119,6 +91,20 @@ namespace BgituGrades.Services
                     g => g.Name,
                     g => g.Id,
                     StringComparer.OrdinalIgnoreCase));
+            foreach (var key in groupsByName.Keys)
+                Console.WriteLine($"key bytes: {string.Join(" ", System.Text.Encoding.UTF8.GetBytes(key))}");
+
+            var subGroupMap = groupsByName
+                .Keys
+                .Where(name => name.Contains('(') && name.Contains(')'))
+                .GroupBy(name => name[..name.IndexOf('(')].Trim(), StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.Select(name => groupsByName[name]).ToList(), StringComparer.OrdinalIgnoreCase);
+            Console.WriteLine(subGroupMap.Count());
+            foreach (var (group, ids) in subGroupMap)
+            {
+                Console.WriteLine($"ZALUPA: {group} id подгрупп {ids}");
+            }
+            
 
             var result = new ImportResult();
             var batch = new List<Student>(BATCH_SIZE);
@@ -148,13 +134,26 @@ namespace BgituGrades.Services
                         
 
                 var groupName = sheet.Cells[row, COL_GROUP_NAME + 1].GetValue<string>()?.Trim();
+                
                 if (string.IsNullOrEmpty(groupName))
                 {
                     result.SkippedRows++;
                     continue;
                 }
-
-                if (!groupsByName.TryGetValue(groupName, out int groupId))
+                
+                List<int> targetGroupIds;
+                if (groupsByName.TryGetValue(groupName, out int exactGroupId))
+                {
+                    Console.WriteLine($"groupName bytes: {string.Join(" ", System.Text.Encoding.UTF8.GetBytes(groupName ?? ""))}");
+                    targetGroupIds = [exactGroupId];
+                }
+                else if (subGroupMap.TryGetValue(groupName, out var subIds))
+                {
+                    foreach (var key in subGroupMap.Keys)
+                        Console.WriteLine($"subGroupMap key bytes: {string.Join(" ", System.Text.Encoding.UTF8.GetBytes(key))}");
+                    targetGroupIds = subIds;
+                }
+                else
                 {
                     unknownGroups.Add(groupName);
                     result.SkippedRows++;
@@ -171,16 +170,16 @@ namespace BgituGrades.Services
                     new[] { lastName, firstName, middleName }
                         .Where(s => !string.IsNullOrEmpty(s) && s != "NULL"));
 
-
-
-                batch.Add(new Student
+                foreach (var gId in targetGroupIds)
                 {
-                    OfficialId = officialId,
-                    Name = fullName,
-                    GroupId = groupId,
-                    OfficialGroupId = officialGroupId,
-                });
-
+                    batch.Add(new Student
+                    {
+                        OfficialId = officialId,
+                        Name = fullName,
+                        GroupId = gId,
+                        OfficialGroupId = officialGroupId,
+                    });
+                }
                 result.ProcessedRows++;
 
                 if (batch.Count >= BATCH_SIZE)

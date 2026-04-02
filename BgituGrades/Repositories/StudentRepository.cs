@@ -176,7 +176,7 @@ namespace BgituGrades.Repositories
         public async Task BulkInsertAsync(List<Student> students, CancellationToken cancellationToken)
         {
             using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
-            var bulkConfig = new BulkConfig { UpdateByProperties = [nameof(Student.OfficialId)] };
+            var bulkConfig = new BulkConfig { UpdateByProperties = [nameof(Student.OfficialId), nameof(Student.GroupId)] };
             await context.BulkInsertOrUpdateAsync(students, bulkConfig, cancellationToken: cancellationToken);
         }
 
