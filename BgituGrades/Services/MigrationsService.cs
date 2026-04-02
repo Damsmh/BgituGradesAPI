@@ -94,15 +94,19 @@ namespace BgituGrades.Services
                 .SelectMany(gId => disciplines.Select(d => (GroupId: gId, DisciplineId: d.Id)))
                 .ToList();
 
-            var scheduleTasks = groupDisciplinePairs.Select(async pair =>
-            {
-                var dates = await classService.GenerateScheduleDatesAsync(pair.GroupId, pair.DisciplineId, cancellationToken);
-                return (pair.GroupId, pair.DisciplineId, Total: dates.Count());
-            });
+            var allClasses = await db.Classes.AsNoTracking().ToListAsync(cancellationToken);
+            var allTransfers = await db.Transfers.AsNoTracking().ToListAsync(cancellationToken);
 
-            var scheduleResults = await Task.WhenAll(scheduleTasks);
-            var scheduleTotalDict = scheduleResults
-                .ToDictionary(r => (r.GroupId, r.DisciplineId), r => r.Total);
+            var scheduleTotalDict = new Dictionary<(int GroupId, int DisciplineId), int>();
+
+            foreach (var pair in groupDisciplinePairs)
+            {
+                var group = groupDict[pair.GroupId];
+                var classes = allClasses.Where(c => c.GroupId == pair.GroupId && c.DisciplineId == pair.DisciplineId);
+                var transfers = allTransfers.Where(t => t.GroupId == pair.GroupId && t.DisciplineId == pair.DisciplineId);
+                var dates = await classService.GenerateScheduleDatesAsync(group, classes, transfers);
+                scheduleTotalDict[(pair.GroupId, pair.DisciplineId)] = dates.Count();
+            }
 
             var presenceDict = presences
                 .GroupBy(p => (p.StudentId, p.DisciplineId))
@@ -159,6 +163,8 @@ namespace BgituGrades.Services
                 };
             }).ToList();
 
+            
+
             await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
             try
             {
@@ -171,8 +177,8 @@ namespace BgituGrades.Services
                 await transaction.RollbackAsync(cancellationToken);
                 throw;
             }
-
             await db.BulkInsertAsync(archives, cancellationToken: cancellationToken);
+
         }
     }
 }

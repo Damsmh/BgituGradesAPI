@@ -19,6 +19,8 @@ namespace BgituGrades.Services
         Task<bool> DeleteClassAsync(int id, CancellationToken cancellationToken);
         Task<IEnumerable<ClassDateResponse>> GenerateScheduleDatesAsync(int groupId, int disciplineId, CancellationToken cancellationToken,
             DateOnly? startDateOverride = null, DateOnly? endDateOverride = null);
+        Task<IEnumerable<ClassDateResponse>> GenerateScheduleDatesAsync(Group group, IEnumerable<Class> classes,
+            IEnumerable<Transfer> transfers, DateOnly? startDateOverride = null, DateOnly? endDateOverride = null);
         Task<IEnumerable<ClassDTO>> GetAllClassesDtoAsync(CancellationToken cancellationToken);
         Task<ClassDTO?> GetClassDtoByIdAsync(int id, CancellationToken cancellationToken);
     }
@@ -100,6 +102,61 @@ namespace BgituGrades.Services
                 {
                     var lessonDate = currentWeekStart
                         .AddDays(_class.WeekDay - 1)  
+                        .AddDays(7 * (_class.Weeknumber - 1));
+
+                    var actualDate = transferMap.TryGetValue(lessonDate, out var newDate)
+                        ? newDate
+                        : lessonDate;
+
+                    if (lessonDate >= startDate && lessonDate <= endDate)
+                    {
+                        dates.Add(new ClassDateResponse
+                        {
+                            Date = actualDate,
+                            ClassType = _class.Type,
+                            StartTime = _class.StartTime,
+                            Id = _class.Id
+                        });
+                    }
+                }
+                currentWeekStart = currentWeekStart.AddDays(14);
+            }
+
+            return dates.OrderBy(d => d.Date).DistinctBy(d => (d.Date, d.ClassType)).ToList();
+        }
+
+        public async Task<IEnumerable<ClassDateResponse>> GenerateScheduleDatesAsync(Group group, IEnumerable<Class> classes, 
+            IEnumerable<Transfer> transfers, DateOnly? startDateOverride = null, DateOnly? endDateOverride = null)
+        {
+            var startDate = startDateOverride ?? group.StudyStartDate;
+            var endDate = endDateOverride ?? group.StudyEndDate;
+            var firstWeekStart = group.StartWeekNumber;
+
+            var dates = new List<ClassDateResponse>();
+
+
+            var studyStartDayOfWeek = startDate.DayOfWeek;
+            var daysToMonday = ((int)DayOfWeek.Monday - (int)studyStartDayOfWeek + 7) % 7;
+            var firstMonday = startDate.AddDays(daysToMonday);
+
+
+            var week1Start = firstMonday.AddDays(-7 * (firstWeekStart - 1));
+
+            var transferMap = transfers
+                .ToDictionary(t => t.OriginalDate, t => t.NewDate);
+
+
+            if (week1Start > endDate.AddDays(7))
+                return dates;
+
+            var currentWeekStart = week1Start;
+
+            while (currentWeekStart <= endDate.AddDays(7))
+            {
+                foreach (var _class in classes)
+                {
+                    var lessonDate = currentWeekStart
+                        .AddDays(_class.WeekDay - 1)
                         .AddDays(7 * (_class.Weeknumber - 1));
 
                     var actualDate = transferMap.TryGetValue(lessonDate, out var newDate)
