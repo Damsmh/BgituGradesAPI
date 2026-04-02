@@ -4,6 +4,7 @@ using BgituGrades.Entities;
 using BgituGrades.Models.Student;
 using BgituGrades.Repositories;
 using OfficeOpenXml;
+using System.Text.RegularExpressions;
 
 namespace BgituGrades.Services
 {
@@ -18,7 +19,7 @@ namespace BgituGrades.Services
         Task<ImportResult> ImportStudentsFromXlsxAsync(Stream streamFile, CancellationToken cancellationToken);
         Task DeleteAllAsync(CancellationToken cancellationToken);
     }
-    public class StudentService(IStudentRepository studentRepository, IPresenceRepository presenceRepository,
+    public partial class StudentService(IStudentRepository studentRepository, IPresenceRepository presenceRepository,
         IClassService classService, IDisciplineRepository disciplineRepository, IGroupService groupService, IMapper mapper) : IStudentService
         
     {
@@ -91,20 +92,20 @@ namespace BgituGrades.Services
                     g => g.Name,
                     g => g.Id,
                     StringComparer.OrdinalIgnoreCase));
-            foreach (var key in groupsByName.Keys)
-                Console.WriteLine($"key bytes: {string.Join(" ", System.Text.Encoding.UTF8.GetBytes(key))}");
 
             var subGroupMap = groupsByName
                 .Keys
                 .Where(name => name.Contains('(') && name.Contains(')'))
-                .GroupBy(name => name[..name.IndexOf('(')].Trim(), StringComparer.OrdinalIgnoreCase)
+                .GroupBy(name =>
+                {
+                    var match = Regex.Match(name, @"\([а-яёa-z]\)$",
+                        RegexOptions.IgnoreCase);
+                    return match.Success
+                        ? name[..match.Index].Trim()
+                        : name[..name.IndexOf('(')].Trim();
+                }, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(g => g.Key, g => g.Select(name => groupsByName[name]).ToList(), StringComparer.OrdinalIgnoreCase);
-            Console.WriteLine(subGroupMap.Count());
-            foreach (var (group, ids) in subGroupMap)
-            {
-                Console.WriteLine($"ZALUPA: {group} id подгрупп {ids}");
-            }
-            
+
 
             var result = new ImportResult();
             var batch = new List<Student>(BATCH_SIZE);
@@ -144,13 +145,10 @@ namespace BgituGrades.Services
                 List<int> targetGroupIds;
                 if (groupsByName.TryGetValue(groupName, out int exactGroupId))
                 {
-                    Console.WriteLine($"groupName bytes: {string.Join(" ", System.Text.Encoding.UTF8.GetBytes(groupName ?? ""))}");
                     targetGroupIds = [exactGroupId];
                 }
                 else if (subGroupMap.TryGetValue(groupName, out var subIds))
                 {
-                    foreach (var key in subGroupMap.Keys)
-                        Console.WriteLine($"subGroupMap key bytes: {string.Join(" ", System.Text.Encoding.UTF8.GetBytes(key))}");
                     targetGroupIds = subIds;
                 }
                 else
