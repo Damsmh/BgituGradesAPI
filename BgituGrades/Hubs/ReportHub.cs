@@ -25,7 +25,7 @@ namespace BgituGrades.Hubs
         }
 
         [Channel("hubs/report/GenerateArchivedReport")]
-        [PublishOperation(typeof(ArchivedReportRequest), Summary = "Запросить формирование архивного отчёта", OperationId = nameof(GenerateReport))]
+        [PublishOperation(typeof(ArchivedReportRequest), Summary = "Запросить формирование архивного отчёта", OperationId = nameof(GenerateArchivedReport))]
         public async Task GenerateArchivedReport(ArchivedReportRequest request)
         {
             var cancellationToken = Context.ConnectionAborted;

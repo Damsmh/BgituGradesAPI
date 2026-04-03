@@ -48,6 +48,7 @@ namespace BgituGrades.Features
             services.AddScoped<IArchivedReportService, ArchivedReportService>();
             services.AddScoped<ISettingService, SettingService>();
             services.AddScoped<IAuthorizationHandler, GroupAccessHandler>();
+            services.AddScoped<IScheduleLoaderService, ScheduleLoaderService>();
             services.ConfigureOptions<ConfigureSwaggerOptions>();
 
             services.AddSingleton<ITokenHasher, TokenHasher>();

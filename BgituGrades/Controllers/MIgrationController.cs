@@ -10,9 +10,10 @@ namespace BgituGrades.Controllers
     [Route("api/migrations")]
     [ApiVersion("2.0")]
     [ApiController]
-    public class MIgrationController(IMigrationService migrationService) : ControllerBase
+    public class MIgrationController(IMigrationService migrationService, IScheduleLoaderService loader ) : ControllerBase
     {
         private readonly IMigrationService _migrationService = migrationService;
+        private readonly IScheduleLoaderService _loader = loader;
 
         [HttpDelete("truncate")]
         [Authorize(Policy = "Admin")]
@@ -37,6 +38,14 @@ namespace BgituGrades.Controllers
             {
                 return Conflict(ex.Message);
             }
+        }
+
+        [HttpPost("sync")]
+        [Authorize(Policy = "Admin")]
+        public async Task<IActionResult> Sync(CancellationToken ct)
+        {
+            var success = await _loader.RunAsync(ct);
+            return success ? Ok() : StatusCode(500, "Loader failed");
         }
 
         [HttpGet("periods/all")]
