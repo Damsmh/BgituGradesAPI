@@ -20,9 +20,9 @@ namespace BgituGrades.Services
         IDistributedCache cache,
         IServiceScopeFactory scopeFactory) : IReportService
     {
-        private readonly IHubContext<ReportHub> _hubContext = hubContext;
-        private readonly IDistributedCache _cache = cache;
-        private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
+        protected readonly IHubContext<ReportHub> _hubContext = hubContext;
+        protected readonly IDistributedCache _cache = cache;
+        protected readonly IServiceScopeFactory _scopeFactory = scopeFactory;
 
         public async Task<Guid> GenerateReportAsync(ReportRequest request, string connectionId, CancellationToken cancellationToken)
         {
@@ -34,7 +34,7 @@ namespace BgituGrades.Services
             return reportId;
         }
 
-        private async Task GenerateWithProgress(Guid reportId, ReportRequest request, CancellationToken cancellationToken)
+        protected virtual async Task GenerateWithProgress(Guid reportId, ReportRequest request, CancellationToken cancellationToken)
         {
             using var scope = _scopeFactory.CreateScope();
 
@@ -108,7 +108,7 @@ namespace BgituGrades.Services
             }
         }
 
-        private static async Task<TablePreview> GenerateMarksExcelAsync(IMarkRepository _markRepository, IEnumerable<Group> groups, 
+        protected static async Task<TablePreview> GenerateMarksExcelAsync(IMarkRepository _markRepository, IEnumerable<Group> groups, 
             IEnumerable<Discipline> disciplines, IEnumerable<Student> students, CancellationToken cancellationToken)
         {
             using var package = new ExcelPackage();
@@ -240,7 +240,7 @@ namespace BgituGrades.Services
             };
         }
 
-        private static async Task<TablePreview> GeneratePresenceExcelAsync(IPresenceRepository _presenceRepository, IEnumerable<Group> groups, 
+        protected static async Task<TablePreview> GeneratePresenceExcelAsync(IPresenceRepository _presenceRepository, IEnumerable<Group> groups, 
             IEnumerable<Discipline> disciplines, IEnumerable<Student> students, IClassService _classService, CancellationToken cancellationToken)
         {
             using var package = new ExcelPackage();

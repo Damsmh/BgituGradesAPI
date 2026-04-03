@@ -1,10 +1,8 @@
 ﻿using BgituGrades.Data;
 using BgituGrades.Entities;
-using BgituGrades.DTO;
-using BgituGrades.Models.Group;
 using Microsoft.EntityFrameworkCore;
-using EFCore.BulkExtensions;
 using AutoMapper;
+using BgituGrades.Models.Group;
 
 namespace BgituGrades.Repositories
 {
@@ -14,11 +12,16 @@ namespace BgituGrades.Repositories
         Task<Group> CreateGroupAsync(Group entity, CancellationToken cancellationToken);
         Task<Group?> GetByIdAsync(int id, CancellationToken cancellationToken);
         Task<IEnumerable<Group>> GetArchivedByPeriod(int semester, int year, CancellationToken cancellationToken);
+        Task<IEnumerable<CourseReponse>> GetCoursesAsync(CancellationToken cancellationToken);
+        Task<IEnumerable<Group>> GetGroupsByCoursesAsync(IEnumerable<int> courses, CancellationToken cancellationToken);
         Task<bool> UpdateGroupAsync(Group entity, CancellationToken cancellationToken);
         Task<bool> DeleteGroupAsync(int id, CancellationToken cancellationToken);
         Task DeleteAllAsync(CancellationToken cancellationToken);
         Task<IEnumerable<Group>> GetGroupsByIdsAsync(int[] groupIds, CancellationToken cancellationToken);
         Task<IEnumerable<Group>> GetByIdsAsync(List<int> groupIds, CancellationToken cancellationToken);
+        Task<IEnumerable<CourseReponse>> GetArchivedCoursesByPeriodAsync(int year, int semester, CancellationToken cancellationToken);
+        Task<IEnumerable<ArchivedGroupResponse>> GetArchivedGroupsByCoursesAsync(IEnumerable<int> courses, CancellationToken cancellationToken);
+        Task<IEnumerable<ArchivedGroupResponse>> GetArchivedGroupsByCoursesAndPeriodAsync(GetArchivedByCoursesRequest request, CancellationToken cancellationToken);
     }
 
     public class GroupRepository(IDbContextFactory<AppDbContext> contextFactory, IMapper mapper) : IGroupRepository
@@ -71,6 +74,45 @@ namespace BgituGrades.Repositories
             return archivedGroups;
         }
 
+        public async Task<IEnumerable<CourseReponse>> GetArchivedCoursesByPeriodAsync(int year, int semester, CancellationToken cancellationToken)
+        {
+            using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
+            return await context.ReportSnapshots
+                .AsNoTracking()
+                .Where(r => r.Year == year && r.Semester == semester)
+                .Select(r => r.GroupCourseNumber)
+                .Distinct()
+                .Select(course => new CourseReponse { CourseNumber = course })
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<IEnumerable<ArchivedGroupResponse>> GetArchivedGroupsByCoursesAndPeriodAsync(
+            GetArchivedByCoursesRequest request, CancellationToken cancellationToken)
+        {
+            using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
+            int[] courses = request.Courses!.Values;
+
+            return await context.ReportSnapshots
+                .AsNoTracking()
+                .Where(r => r.Year == request.Year
+                         && r.Semester == request.Semester
+                         && courses.Contains(r.GroupCourseNumber))
+                .GroupBy(r => new { r.GroupId, r.GroupName })
+                .Select(g => new ArchivedGroupResponse { Id = g.Key.GroupId, Name = g.Key.GroupName })
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<IEnumerable<ArchivedGroupResponse>> GetArchivedGroupsByCoursesAsync(IEnumerable<int> courses, CancellationToken cancellationToken)
+        {
+            using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
+            return await context.ReportSnapshots
+                .AsNoTracking()
+                .Where(r => courses.Contains(r.GroupCourseNumber))
+                .DistinctBy(r => r.GroupId)
+                .Select(r => new ArchivedGroupResponse { Id = r.GroupId, Name = r.GroupName })
+                .ToListAsync(cancellationToken);
+        }
+
         public async Task<Group?> GetByIdAsync(int id, CancellationToken cancellationToken)
         {
             using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
@@ -85,6 +127,28 @@ namespace BgituGrades.Repositories
                 .Where(g => groupIds.Contains(g.Id))
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
+        }
+
+        public async Task<IEnumerable<CourseReponse>> GetCoursesAsync(CancellationToken cancellationToken)
+        {
+            using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
+            var courses = await context.Groups
+                .AsNoTracking()
+                .Select(g => g.CourseNumber)
+                .Distinct()
+                .Select(course => new CourseReponse { CourseNumber = course })
+                .ToListAsync(cancellationToken);
+            return courses;
+        }
+
+        public async Task<IEnumerable<Group>> GetGroupsByCoursesAsync(IEnumerable<int> courses, CancellationToken cancellationToken)
+        {
+            using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
+            var entities = await context.Groups
+                .Where(g => courses.Contains(g.CourseNumber))
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+            return entities;
         }
 
         public async Task<IEnumerable<Group>> GetGroupsByDisciplineAsync(int disciplineId, CancellationToken cancellationToken)

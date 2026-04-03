@@ -7,7 +7,7 @@
         public DateOnly StudyStartDate { get; set; }
         public DateOnly StudyEndDate { get; set; }
         public int StartWeekNumber { get; set; }
-        public SubGroup? SubGroup { get; set; }
+        public int CourseNumber { get; set; }
         public ICollection<Student>? Students { get; set; }
         public ICollection<Class>? Classes { get; set; }
         public ICollection<Transfer>? Transfers { get; set; }

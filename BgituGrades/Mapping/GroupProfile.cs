@@ -13,6 +13,8 @@ namespace BgituGrades.Mapping
             CreateMap<UpdateGroupRequest, Group>();
             CreateMap<Group, GroupResponse>();
             CreateMap<Group, GroupDTO>();
+            CreateMap<Group, CourseReponse>();
+            CreateMap<Group, ArchivedGroupResponse>();
             CreateMap<GroupDTO, Group>();
         }
     }

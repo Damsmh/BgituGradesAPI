@@ -26,9 +26,6 @@ namespace BgituGrades.Data
             modelBuilder.Entity<Presence>()
                 .Property(u => u.IsPresent)
                 .HasConversion(new EnumToStringConverter<PresenceType>());
-            modelBuilder.Entity<Group>()
-                .Property(u => u.SubGroup)
-                .HasConversion(new EnumToStringConverter<SubGroup>());
             modelBuilder.Entity<ApiKey>().HasKey(k => k.Key);
         }
     }

@@ -24,6 +24,27 @@ namespace BgituGrades.Controllers
             return Ok(groups);
         }
 
+        [HttpGet("courses")]
+        [ApiVersion("2.0")]
+        [Authorize(Policy = "ViewOnly")]
+        [ProducesResponseType(typeof(IEnumerable<CourseReponse>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<CourseReponse>>> GetCoursesByPeriod(CancellationToken cancellationToken)
+        {
+            var courses = await _groupService.GetCoursesAsync(cancellationToken: cancellationToken);
+            return Ok(courses);
+        }
+
+        [HttpGet("archived/courses")]
+        [ApiVersion("2.0")]
+        [Authorize(Policy = "ViewOnly")]
+        [ProducesResponseType(typeof(IEnumerable<CourseReponse>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<CourseReponse>>> GetArchivedCoursesByPeriod(
+            [FromQuery] GetByPeriodRequest request, CancellationToken cancellationToken)
+        {
+            var groups = await _groupService.GetArchivedCoursesByPeriodAsync(request, cancellationToken: cancellationToken);
+            return Ok(groups);
+        }
+
         [HttpGet("all")]
         [ApiVersion("2.0")]
         [Authorize(Policy = "ViewOnly")]
@@ -37,10 +58,30 @@ namespace BgituGrades.Controllers
         [HttpGet("archived")]
         [ApiVersion("2.0")]
         [Authorize(Policy = "ViewOnly")]
-        [ProducesResponseType(typeof(IEnumerable<GroupResponse>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<GroupResponse>>> GetArchivedGroups([FromQuery] GetGroupsByPeriodRequest request, CancellationToken cancellationToken)
+        [ProducesResponseType(typeof(IEnumerable<ArchivedGroupResponse>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<ArchivedGroupResponse>>> GetArchivedGroups([FromQuery] GetByPeriodRequest request, CancellationToken cancellationToken)
         {
             var groups = await _groupService.GetArchivedGroupsByPeriodAsync(semester: request.Semester, year: request.Year, cancellationToken: cancellationToken);
+            return Ok(groups);
+        }
+
+        [HttpGet("archived/by_courses")]
+        [ApiVersion("2.0")]
+        [Authorize(Policy = "ViewOnly")]
+        [ProducesResponseType(typeof(IEnumerable<ArchivedGroupResponse>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<ArchivedGroupResponse>>> GetArchivedGroups([FromQuery] GetArchivedByCoursesRequest request, CancellationToken cancellationToken)
+        {
+            var groups = await _groupService.GetArchivedGroupsByCoursesAndPeriodAsync(request, cancellationToken: cancellationToken);
+            return Ok(groups);
+        }
+
+        [HttpGet("by_courses")]
+        [ApiVersion("2.0")]
+        [Authorize(Policy = "ViewOnly")]
+        [ProducesResponseType(typeof(IEnumerable<GroupResponse>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<GroupResponse>>> GetGroupsByCourses([FromQuery] GetByCoursesRequest request, CancellationToken cancellationToken)
+        {
+            var groups = await _groupService.GetGroupsByCoursesAsync(request.Courses!, cancellationToken: cancellationToken);
             return Ok(groups);
         }
 

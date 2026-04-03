@@ -10,6 +10,8 @@ namespace BgituGrades.Repositories
         Task<ReportSnapshot?> GetByIdAsync(int id, CancellationToken cancellationToken);
         Task<bool> DeleteReportSnapshotAsync(int id, CancellationToken cancellationToken);
         Task<IEnumerable<ReportSnapshot>> GetReportSnapshotsByGroupAndDisciplineAsync(int groupId, int disciplineId, CancellationToken cancellationToken);
+        Task<IEnumerable<ReportSnapshot>> GetReportSnapshotsByYearAndSemesterAsync(
+            int year, int semester, CancellationToken cancellationToken);
         Task<Dictionary<(int GroupId, int DisciplineId), IEnumerable<ReportSnapshot>>> GetReportSnapshotsByGroupIdsAsync(
             List<int> groupIds, CancellationToken cancellationToken);
     }
@@ -66,6 +68,15 @@ namespace BgituGrades.Repositories
                 .ToDictionary(
                     g => g.Key,
                     g => g.AsEnumerable());
+        }
+
+        public async Task<IEnumerable<ReportSnapshot>> GetReportSnapshotsByYearAndSemesterAsync(int year, int semester, CancellationToken cancellationToken)
+        {
+            using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+            return await context.ReportSnapshots
+                .Where(s => s.Year == year && s.Semester == semester)
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
         }
     }
 }

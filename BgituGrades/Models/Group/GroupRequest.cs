@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using BgituGrades.Entities;
+using BgituGrades.Features;
 
 namespace BgituGrades.Models.Group
 {
@@ -14,12 +15,28 @@ namespace BgituGrades.Models.Group
         public int DisciplineId { get; set; }
     }
 
-    public class GetGroupsByPeriodRequest
+    public class GetByPeriodRequest
     {
         [Required]
         public int Semester { get; set; }
         [Required]
         public int Year { get; set; }
+    }
+
+    public class GetByCoursesRequest
+    {
+        [Required]
+        public CommaSeparatedIntArray? Courses { get; set; }
+    }
+
+    public class GetArchivedByCoursesRequest
+    {
+        [Required]
+        public CommaSeparatedIntArray? Courses { get; set; }
+        [Required]
+        public int Year { get; set; }
+        [Required]
+        public int Semester { get; set; }
     }
 
     public class CreateGroupRequest
@@ -32,7 +49,6 @@ namespace BgituGrades.Models.Group
         public DateOnly StudyEndDate { get; set; }
         [Required]
         public int StartWeekNumber { get; set; }
-        public SubGroup? SubGroup { get; set; }
     }
 
     public class UpdateGroupRequest
@@ -47,7 +63,6 @@ namespace BgituGrades.Models.Group
         public DateOnly StudyEndDate { get; set; }
         [Required]
         public int StartWeekNumber { get; set; }
-        public SubGroup? SubGroup { get; set; }
     }
 
     public class DeleteGroupRequest

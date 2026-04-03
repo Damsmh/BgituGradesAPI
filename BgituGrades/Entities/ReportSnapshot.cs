@@ -12,6 +12,7 @@
 
         public int GroupId { get; set; }
         public string GroupName { get; set; } = string.Empty;
+        public int GroupCourseNumber { get; set; }
 
         public int DisciplineId { get; set; }
         public string DisciplineName { get; set; } = string.Empty;

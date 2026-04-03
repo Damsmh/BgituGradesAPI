@@ -168,6 +168,7 @@ namespace BgituGrades.Services
                     StudentName = student?.Name ?? string.Empty,
                     GroupId = student?.GroupId ?? 0,
                     GroupName = group?.Name ?? string.Empty,
+                    GroupCourseNumber = group?.CourseNumber ?? 0,
                     DisciplineId = pair.DisciplineId,
                     DisciplineName = discipline?.Name ?? string.Empty,
                     Presences = $"{total - absent}/{total}",

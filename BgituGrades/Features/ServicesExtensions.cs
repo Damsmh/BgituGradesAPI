@@ -45,6 +45,7 @@ namespace BgituGrades.Features
             services.AddScoped<IApiKeyProvider, ApiKeyProvider>();
             services.AddScoped<IKeyService, KeyService>();
             services.AddScoped<IReportService, ReportService>();
+            services.AddScoped<IArchivedReportService, ArchivedReportService>();
             services.AddScoped<ISettingService, SettingService>();
             services.AddScoped<IAuthorizationHandler, GroupAccessHandler>();
             services.ConfigureOptions<ConfigureSwaggerOptions>();
