@@ -24,9 +24,9 @@ namespace BgituGrades.Controllers
             {
                 return NotFound("Отчет не найден или срок его хранения истек.");
             }
-            
+
             var fileName = $"отчет_{reportId:N}.xlsx";
-            
+
 
             return File(excelBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
         }

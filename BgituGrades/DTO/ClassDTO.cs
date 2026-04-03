@@ -13,7 +13,8 @@ namespace BgituGrades.DTO
         public int GroupId { get; set; }
     }
 
-    public class ClassDateDTO {
+    public class ClassDateDTO
+    {
         public DateOnly Date { get; set; }
         public ClassType ClassType { get; set; }
         public DateTime StartTime { get; set; }

@@ -18,7 +18,7 @@ namespace BgituGrades.Entities
         {
             get
             {
-                var claims = new List<Claim>{ new(ClaimTypes.Role, Role ?? "STUDENT") };
+                var claims = new List<Claim> { new(ClaimTypes.Role, Role ?? "STUDENT") };
 
                 if (GroupId.HasValue)
                 {

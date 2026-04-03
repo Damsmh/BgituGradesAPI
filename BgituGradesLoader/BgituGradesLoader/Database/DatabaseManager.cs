@@ -2,44 +2,53 @@
 using Newtonsoft.Json;
 using System.Text;
 
-namespace BgituGradesLoader.Database {
-    public static class DatabaseManager {
-        private const string API_LINK = "https://maxim.pamagiti.site/api/";
-        private const string API_NUKE = API_LINK + "truncate";
+namespace BgituGradesLoader.Database
+{
+    public static class DatabaseManager
+    {
+        private const string API_LINK = "https://localhost:7219/api/";
+        private const string API_NUKE = API_LINK + "migrations/truncate";
         private const string API_GROUP = API_LINK + "group";
         private const string API_DISCIPLINE = API_LINK + "discipline";
         private const string API_PAIR = API_LINK + "class";
 
-        public static async Task NukeDatabase() {
+        public static async Task NukeDatabase()
+        {
             using HttpClient client = new();
             HttpRequestMessage request = CreateNewRequest(HttpMethod.Delete, API_NUKE);
 
             using HttpResponseMessage response = await client.SendAsync(request);
-            if (!response.IsSuccessStatusCode) {
+            if (!response.IsSuccessStatusCode)
+            {
                 Console.WriteLine($"Не удалось очистить базу данных: {response.StatusCode}");
             }
         }
 
-        public static async Task<DatabaseGroup> AddGroup(DatabaseGroup group) {
+        public static async Task<DatabaseGroup> AddGroup(DatabaseGroup group)
+        {
             return await AddObjectToDatabase(group, API_GROUP, "группу");
         }
 
-        public static async Task<DatabaseDiscipline> AddDiscipline(DatabaseDiscipline discipline) {
+        public static async Task<DatabaseDiscipline> AddDiscipline(DatabaseDiscipline discipline)
+        {
             return await AddObjectToDatabase(discipline, API_DISCIPLINE, "дисциплину");
         }
 
-        public static async Task AddPair(DatabasePair pair) {
+        public static async Task AddPair(DatabasePair pair)
+        {
             await AddObjectToDatabase(pair, API_PAIR, "пару");
         }
 
-        private static async Task<T> AddObjectToDatabase<T>(T obj, string apiLink, string objName) {
+        private static async Task<T> AddObjectToDatabase<T>(T obj, string apiLink, string objName)
+        {
             using HttpClient client = new();
             HttpRequestMessage request = CreateNewRequest(HttpMethod.Post, apiLink);
             string content = JsonConvert.SerializeObject(obj);
             request.Content = new StringContent(content, Encoding.UTF8, "application/json");
 
             using HttpResponseMessage response = await client.SendAsync(request);
-            if (!response.IsSuccessStatusCode) {
+            if (!response.IsSuccessStatusCode)
+            {
                 Console.WriteLine($"Не удалось добавить {objName}: {response.StatusCode}");
                 Console.ReadLine();
             }
@@ -47,7 +56,8 @@ namespace BgituGradesLoader.Database {
             string result = await response.Content.ReadAsStringAsync();
             T? resultObject = JsonConvert.DeserializeObject<T>(result);
 
-            if (resultObject == null) {
+            if (resultObject == null)
+            {
                 Console.WriteLine($"Не удалось добавить {objName}: {response.StatusCode}");
                 Console.ReadLine();
                 return obj;
@@ -55,7 +65,8 @@ namespace BgituGradesLoader.Database {
             return resultObject;
         }
 
-        private static HttpRequestMessage CreateNewRequest(HttpMethod method, string link) {
+        private static HttpRequestMessage CreateNewRequest(HttpMethod method, string link)
+        {
             HttpRequestMessage request = new(method, link);
             string? apiKey = Environment.GetEnvironmentVariable("GRADES_API_KEY");
             if (String.IsNullOrEmpty(apiKey))

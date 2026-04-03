@@ -5,8 +5,10 @@ using BgituGradesLoader.Save;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 
-namespace BgituGradesLoader.Table {
-    public class TableManager {
+namespace BgituGradesLoader.Table
+{
+    public class TableManager
+    {
         private readonly SaveManager _saveManager;
         private readonly Dictionary<string, DatabaseGroup> _groupsData;
 
@@ -15,12 +17,14 @@ namespace BgituGradesLoader.Table {
 
         private const string FILE_PATH = "table.xlsx";
 
-        public TableManager(SaveManager saveManager) {
+        public TableManager(SaveManager saveManager)
+        {
             _saveManager = saveManager;
             _groupsData = [];
         }
 
-        public DatabaseGroup? GetGroupData(string name) {
+        public DatabaseGroup? GetGroupData(string name)
+        {
             name = GroupNameUtils.SimplyfyGroupName(name);
             if (_groupsData.TryGetValue(name, out DatabaseGroup? value))
                 return value;
@@ -32,7 +36,8 @@ namespace BgituGradesLoader.Table {
             return null;
         }
 
-        public async Task GenerateGroupsData() {
+        public async Task GenerateGroupsData()
+        {
             await LoadTable();
             await LoadCompassConfig();
 
@@ -40,11 +45,13 @@ namespace BgituGradesLoader.Table {
             DeleteTable();
         }
 
-        private async Task LoadCompassConfig() {
+        private async Task LoadCompassConfig()
+        {
             _config = await CompassManager.GetConfig();
         }
 
-        private async Task LoadTable() {
+        private async Task LoadTable()
+        {
             string? url = _saveManager.SaveData.TableLink.Data;
             if (url == null)
                 return;
@@ -59,14 +66,16 @@ namespace BgituGradesLoader.Table {
             File.WriteAllBytes(FILE_PATH, await response.Content.ReadAsByteArrayAsync());
         }
 
-        private static void DeleteTable() {
+        private static void DeleteTable()
+        {
             if (!File.Exists(FILE_PATH))
                 return;
 
             File.Delete(FILE_PATH);
         }
 
-        private void ScrapDataFromTable() {
+        private void ScrapDataFromTable()
+        {
             using SpreadsheetDocument doc = SpreadsheetDocument.Open(FILE_PATH, false);
             WorkbookPart? workbookPart = doc.WorkbookPart;
             if (workbookPart == null || workbookPart.Workbook == null)
@@ -85,18 +94,23 @@ namespace BgituGradesLoader.Table {
             SheetData sheetData = worksheetPart.Worksheet.Elements<SheetData>().First();
             List<string> mergedCells = TableUtils.GenerateMergedCellsList(worksheetPart.Worksheet);
 
-            foreach (Row row in sheetData.Elements<Row>()) {
+            foreach (Row row in sheetData.Elements<Row>())
+            {
                 IEnumerable<Cell> cells = row.Elements<Cell>();
                 if (!cells.Any())
                     continue;
 
                 string firstCell = TableUtils.GetTextFromCell(cells.First(), sst);
-                if (firstCell.StartsWith("Календарный учебный график")) {
+                if (firstCell.StartsWith("Календарный учебный график"))
+                {
                     CompileCurrentTableData();
                     _nowTableData = new(mergedCells, sst);
-                } else {
+                }
+                else
+                {
                     _nowTableData?.AddRow(row);
-                    if (_nowTableData?.NowState == TableState.ForceEnd) {
+                    if (_nowTableData?.NowState == TableState.ForceEnd)
+                    {
                         CompileCurrentTableData();
                         _nowTableData = null;
                     }
@@ -104,12 +118,14 @@ namespace BgituGradesLoader.Table {
             }
         }
 
-        private void CompileCurrentTableData() {
+        private void CompileCurrentTableData()
+        {
             if (_nowTableData == null || _config == null)
                 return;
 
             List<DatabaseGroup> groups = _nowTableData.CompileTable(_config);
-            foreach (DatabaseGroup group in groups) {
+            foreach (DatabaseGroup group in groups)
+            {
                 if (group.Name == null)
                     continue;
 

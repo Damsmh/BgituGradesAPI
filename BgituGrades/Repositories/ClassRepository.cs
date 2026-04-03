@@ -1,6 +1,5 @@
 ﻿using BgituGrades.Data;
 using BgituGrades.Entities;
-using BgituGrades.Models.Class;
 using Microsoft.EntityFrameworkCore;
 
 namespace BgituGrades.Repositories

@@ -1,11 +1,14 @@
 ﻿using Newtonsoft.Json;
 
-namespace BgituGradesLoader.Save.Data {
+namespace BgituGradesLoader.Save.Data
+{
     [Serializable]
-    public class SaveData {
+    public class SaveData
+    {
         [JsonProperty] public SaveDataField<string> TableLink;
 
-        public SaveData() {
+        public SaveData()
+        {
             TableLink = new();
         }
     }

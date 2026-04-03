@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "BgituGradesLoader": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}

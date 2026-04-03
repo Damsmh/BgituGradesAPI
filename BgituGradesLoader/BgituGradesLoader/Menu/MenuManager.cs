@@ -3,12 +3,15 @@ using BgituGradesLoader.Menu.Panels.DataChange;
 using BgituGradesLoader.Save;
 using BgituGradesLoader.Table;
 
-namespace BgituGradesLoader.Menu {
-    public class MenuManager {
+namespace BgituGradesLoader.Menu
+{
+    public class MenuManager
+    {
         private readonly List<ConsolePanel> _panels;
         private ConsolePanel? _nowPanel;
 
-        public MenuManager() {
+        public MenuManager()
+        {
             SaveManager saveManager = new();
             TableManager tableManager = new(saveManager);
 
@@ -20,13 +23,18 @@ namespace BgituGradesLoader.Menu {
             ];
         }
 
-        public async Task Run() {
-            while (true) {
-                if (_nowPanel == null) {
+        public async Task Run()
+        {
+            while (true)
+            {
+                if (_nowPanel == null)
+                {
                     PrintPanelsMenu();
                     if (_nowPanel == null)
                         return;
-                } else {
+                }
+                else
+                {
                     await _nowPanel.Run();
                     Console.WriteLine("Нажмите Enter для возврата");
                     Console.ReadLine();
@@ -37,7 +45,8 @@ namespace BgituGradesLoader.Menu {
             }
         }
 
-        private void PrintPanelsMenu() {
+        private void PrintPanelsMenu()
+        {
             for (int i = 0; i < _panels.Count; i++)
                 Console.WriteLine($"{i + 1} - {_panels[i].Title}");
             Console.WriteLine("0 — Выход");

@@ -2,7 +2,6 @@
 using BgituGrades.DTO;
 using BgituGrades.Entities;
 using BgituGrades.Models.Class;
-using BgituGrades.Models.Transfer;
 using BgituGrades.Repositories;
 using Microsoft.Extensions.Caching.Distributed;
 using System.Text.Json;
@@ -79,12 +78,12 @@ namespace BgituGrades.Services
 
             var dates = new List<ClassDateResponse>();
 
-    
+
             var studyStartDayOfWeek = startDate.DayOfWeek;
             var daysToMonday = ((int)DayOfWeek.Monday - (int)studyStartDayOfWeek + 7) % 7;
             var firstMonday = startDate.AddDays(daysToMonday);
 
-     
+
             var week1Start = firstMonday.AddDays(-7 * (firstWeekStart - 1));
 
             var transferMap = transfers
@@ -101,7 +100,7 @@ namespace BgituGrades.Services
                 foreach (var _class in classes)
                 {
                     var lessonDate = currentWeekStart
-                        .AddDays(_class.WeekDay - 1)  
+                        .AddDays(_class.WeekDay - 1)
                         .AddDays(7 * (_class.Weeknumber - 1));
 
                     var actualDate = transferMap.TryGetValue(lessonDate, out var newDate)
@@ -125,7 +124,7 @@ namespace BgituGrades.Services
             return dates.OrderBy(d => d.Date).DistinctBy(d => (d.Date, d.ClassType)).ToList();
         }
 
-        public async Task<IEnumerable<ClassDateResponse>> GenerateScheduleDatesAsync(Group group, IEnumerable<Class> classes, 
+        public async Task<IEnumerable<ClassDateResponse>> GenerateScheduleDatesAsync(Group group, IEnumerable<Class> classes,
             IEnumerable<Transfer> transfers, DateOnly? startDateOverride = null, DateOnly? endDateOverride = null)
         {
             var startDate = startDateOverride ?? group.StudyStartDate;
@@ -244,7 +243,7 @@ namespace BgituGrades.Services
             }
             catch
             {
-                
+
             }
         }
     }

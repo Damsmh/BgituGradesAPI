@@ -1,7 +1,6 @@
 ﻿using BgituGrades.Models.Class;
 using BgituGrades.Models.Mark;
 using BgituGrades.Models.Presence;
-using BgituGrades.Models.Report;
 using BgituGrades.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;

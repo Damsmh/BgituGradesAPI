@@ -70,7 +70,7 @@ namespace BgituGrades.Repositories
             return entities;
         }
 
-        public async Task<IEnumerable<FullGradePresenceResponse>> GetPresenseGrade(IEnumerable<ClassDateResponse> scheduleDates, 
+        public async Task<IEnumerable<FullGradePresenceResponse>> GetPresenseGrade(IEnumerable<ClassDateResponse> scheduleDates,
             int groupId, int disciplineId, CancellationToken cancellationToken)
         {
             using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
@@ -168,7 +168,7 @@ namespace BgituGrades.Repositories
             using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
             var entities = await context.Students
                 .AsNoTracking()
-                .Where(s =>  groupIds.Contains(s.GroupId))
+                .Where(s => groupIds.Contains(s.GroupId))
                 .ToListAsync(cancellationToken: cancellationToken);
             return entities;
         }
@@ -180,7 +180,7 @@ namespace BgituGrades.Repositories
             await context.BulkInsertOrUpdateAsync(students, bulkConfig, cancellationToken: cancellationToken);
         }
 
-        
+
 
         public async Task DeleteAllAsync(CancellationToken cancellationToken)
         {

@@ -4,9 +4,9 @@ namespace BgituGrades.Models.Report
 {
     public class ReportResponse
     {
-        public required string ReportId {  get; set; }
-        public int Progress {  get; set; }
-        public required string Description {  get; set; }
+        public required string ReportId { get; set; }
+        public int Progress { get; set; }
+        public required string Description { get; set; }
     }
 
     public class ReadyReportResponse
@@ -18,7 +18,7 @@ namespace BgituGrades.Models.Report
 
     public class PeriodResponse
     {
-        public int Semester {  get; set; }
+        public int Semester { get; set; }
         public int Year { get; set; }
     }
 }

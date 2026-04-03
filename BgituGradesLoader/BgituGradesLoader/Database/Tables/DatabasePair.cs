@@ -1,9 +1,11 @@
 ﻿using BgituGradesLoader.Compass.Objects;
 using Newtonsoft.Json;
 
-namespace BgituGradesLoader.Database.Tables {
+namespace BgituGradesLoader.Database.Tables
+{
     [Serializable]
-    public class DatabasePair {
+    public class DatabasePair
+    {
         [JsonProperty] private int id;
         [JsonProperty] private string type;
         [JsonProperty] private int weekNumber;
@@ -13,7 +15,8 @@ namespace BgituGradesLoader.Database.Tables {
         [JsonProperty] private int groupId;
 
         [JsonConstructor]
-        public DatabasePair(int id, string type, int weekNumber, int weekDay, string startAt, int disciplineId, int groupId) {
+        public DatabasePair(int id, string type, int weekNumber, int weekDay, string startAt, int disciplineId, int groupId)
+        {
             this.id = id;
             this.type = type;
             this.weekNumber = weekNumber;
@@ -23,7 +26,8 @@ namespace BgituGradesLoader.Database.Tables {
             this.groupId = groupId;
         }
 
-        public DatabasePair(CompassPair compassPair) {
+        public DatabasePair(CompassPair compassPair)
+        {
             type = DatabaseUtils.GetPairType(compassPair.IsLecture);
             weekNumber = compassPair.WeekNumber;
             weekDay = compassPair.DayNumber;
@@ -32,11 +36,13 @@ namespace BgituGradesLoader.Database.Tables {
             startAt = $"{plugDate}T{compassPair.StartAt}Z";
         }
 
-        public void SetDiscipline(DatabaseDiscipline discipline) {
+        public void SetDiscipline(DatabaseDiscipline discipline)
+        {
             disciplineId = discipline.Id;
         }
 
-        public void SetGroup(DatabaseGroup group) {
+        public void SetGroup(DatabaseGroup group)
+        {
             groupId = group.Id;
         }
     }

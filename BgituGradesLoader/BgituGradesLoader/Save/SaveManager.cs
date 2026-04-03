@@ -1,8 +1,10 @@
 ﻿using BgituGradesLoader.Database;
 using BgituGradesLoader.Save.Data;
 
-namespace BgituGradesLoader.Save {
-    public class SaveManager {
+namespace BgituGradesLoader.Save
+{
+    public class SaveManager
+    {
         private const string FILE_NAME = "data";
 
         private readonly FileManager<SaveData> _fileManager;
@@ -10,7 +12,8 @@ namespace BgituGradesLoader.Save {
 
         public SaveData SaveData => _data;
 
-        public SaveManager() {
+        public SaveManager()
+        {
             _fileManager = new(FILE_NAME);
 
             SaveData? data = _fileManager.Load();
@@ -18,7 +21,8 @@ namespace BgituGradesLoader.Save {
             _data = data;
         }
 
-        public void Save() {
+        public void Save()
+        {
             _fileManager.Save(_data);
         }
 

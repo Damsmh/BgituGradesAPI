@@ -15,6 +15,6 @@ namespace BgituGrades.Entities
         public Class? Class { get; set; }
         public Discipline? Discipline { get; set; }
         public Student? Student { get; set; }
-        
+
     }
 }

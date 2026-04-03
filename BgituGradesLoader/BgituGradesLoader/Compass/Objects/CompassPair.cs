@@ -1,9 +1,11 @@
 ﻿using Newtonsoft.Json;
 using System.Text;
 
-namespace BgituGradesLoader.Compass.Objects {
+namespace BgituGradesLoader.Compass.Objects
+{
     [Serializable]
-    public class CompassPair {
+    public class CompassPair
+    {
         [JsonProperty] private readonly string? subjectName;
         [JsonProperty] private readonly string? startAt;
         [JsonProperty] private readonly bool isLecture;
@@ -18,40 +20,49 @@ namespace BgituGradesLoader.Compass.Objects {
         public int WeekNumber => _weekNumber;
         public int DayNumber => _dayNumber;
 
-        public string GroupName {
-            get {
+        public string GroupName
+        {
+            get
+            {
                 if (_groupName == null)
                     return string.Empty;
                 return _groupName;
             }
         }
 
-        public string DisciplineName {
-            get {
+        public string DisciplineName
+        {
+            get
+            {
                 if (subjectName == null)
                     return string.Empty;
                 return subjectName;
             }
         }
 
-        public string StartAt {
-            get {
+        public string StartAt
+        {
+            get
+            {
                 if (startAt == null)
                     return string.Empty;
                 return startAt;
             }
         }
 
-        public void SetWeekAndDay(int weekNumber, int dayNumber) {
+        public void SetWeekAndDay(int weekNumber, int dayNumber)
+        {
             _weekNumber = weekNumber;
             _dayNumber = dayNumber;
         }
 
-        public void SetGroupName(string groupName) {
+        public void SetGroupName(string groupName)
+        {
             _groupName = groupName;
         }
 
-        public override string ToString() {
+        public override string ToString()
+        {
             StringBuilder builder = new();
             builder.AppendLine($"Предмет: {subjectName}");
             builder.AppendLine($"Начинается: {startAt}");
@@ -62,7 +73,8 @@ namespace BgituGradesLoader.Compass.Objects {
             return builder.ToString();
         }
 
-        public bool IsPlug() {
+        public bool IsPlug()
+        {
             return DisciplineName.Equals(PLUG_DISCIPLINE);
         }
     }

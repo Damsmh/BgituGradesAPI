@@ -1,9 +1,9 @@
 ﻿using Asp.Versioning;
 using BgituGrades.Data;
+using BgituGrades.Entities;
 using BgituGrades.Models.Presence;
 using BgituGrades.Models.Student;
 using BgituGrades.Services;
-using BgituGrades.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel;
@@ -90,7 +90,7 @@ namespace BgituGrades.Controllers
         {
             var success = await _presenceService.DeletePresenceByStudentAndDateAsync(request, cancellationToken: cancellationToken);
             if (!success)
-                return NotFound(new { studentId = request.StudentId, date = request.Date});
+                return NotFound(new { studentId = request.StudentId, date = request.Date });
 
             return NoContent();
         }

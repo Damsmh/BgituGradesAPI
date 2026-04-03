@@ -29,7 +29,7 @@ namespace BgituGrades.Controllers
         [Obsolete("deprecated")]
         [EndpointDescription("Больше не используется, т.к. произведён полный переход на SignalR")]
         [ProducesResponseType(typeof(IEnumerable<FullGradeMarkResponse>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<FullGradeMarkResponse>>>GetMarkGrade([FromQuery] GetClassDateRequest request, CancellationToken cancellationToken)
+        public async Task<ActionResult<IEnumerable<FullGradeMarkResponse>>> GetMarkGrade([FromQuery] GetClassDateRequest request, CancellationToken cancellationToken)
         {
             var works = await _classService.GetMarksByWorksAsync(request, cancellationToken: cancellationToken);
             return Ok(works);

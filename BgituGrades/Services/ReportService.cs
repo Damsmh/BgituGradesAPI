@@ -56,22 +56,29 @@ namespace BgituGrades.Services
                 if (request.GroupIds != null)
                 {
                     groups = await groupRepo.GetGroupsByIdsAsync(request.GroupIds, cancellationToken: cancellationToken);
-                } else {
+                }
+                else
+                {
                     groups = await groupRepo.GetAllAsync(cancellationToken: cancellationToken);
                 }
-                 
+
                 IEnumerable<Discipline> disciplines;
-                if (request.DisciplineIds !=  null)
+                if (request.DisciplineIds != null)
                 {
                     disciplines = await disciplineRepo.GetDisciplinesByIdsAsync(request.DisciplineIds, cancellationToken: cancellationToken);
-                } else {
+                }
+                else
+                {
                     disciplines = await disciplineRepo.GetByGroupIdsAsync([.. groups.Select(g => g.Id)], cancellationToken: cancellationToken);
                 }
 
                 IEnumerable<Student> students;
-                if (request.StudentIds != null) {
+                if (request.StudentIds != null)
+                {
                     students = await studentRepo.GetStudentsByIdsAsync(request.StudentIds, cancellationToken: cancellationToken);
-                } else {
+                }
+                else
+                {
                     students = await studentRepo.GetStudentsByGroupIdsAsync([.. groups.Select(g => g.Id)], cancellationToken: cancellationToken);
                 }
 
@@ -108,7 +115,7 @@ namespace BgituGrades.Services
             }
         }
 
-        protected static async Task<TablePreview> GenerateMarksExcelAsync(IMarkRepository _markRepository, IEnumerable<Group> groups, 
+        protected static async Task<TablePreview> GenerateMarksExcelAsync(IMarkRepository _markRepository, IEnumerable<Group> groups,
             IEnumerable<Discipline> disciplines, IEnumerable<Student> students, CancellationToken cancellationToken)
         {
             using var package = new ExcelPackage();
@@ -134,7 +141,8 @@ namespace BgituGrades.Services
             var allMarks = await _markRepository.GetMarksByDisciplinesAndGroupsAsync(disciplines.Select(d => d.Id).ToList(), sortedGroups.Select(g => g.Id).ToList(), cancellationToken: cancellationToken);
             var markDict = allMarks
                 .Where(m => m.Work != null && !string.IsNullOrEmpty(m.Value))
-                .Select(m => new {
+                .Select(m => new
+                {
                     m.StudentId,
                     m.Work!.DisciplineId,
                     ParsedValue = double.TryParse(m.Value!.Replace(',', '.'), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double val) ? val : (double?)null
@@ -240,7 +248,7 @@ namespace BgituGrades.Services
             };
         }
 
-        protected static async Task<TablePreview> GeneratePresenceExcelAsync(IPresenceRepository _presenceRepository, IEnumerable<Group> groups, 
+        protected static async Task<TablePreview> GeneratePresenceExcelAsync(IPresenceRepository _presenceRepository, IEnumerable<Group> groups,
             IEnumerable<Discipline> disciplines, IEnumerable<Student> students, IClassService _classService, CancellationToken cancellationToken)
         {
             using var package = new ExcelPackage();
@@ -259,7 +267,7 @@ namespace BgituGrades.Services
                                .DistinctBy(d => d!.Id)
                                .OrderBy(d => d!.Name).ToList() ?? []
             );
-            
+
 
             int maxCols = disciplinesByGroup.Count != 0 ? disciplinesByGroup.Max(g => g.Value.Count) : 1;
 
@@ -360,7 +368,7 @@ namespace BgituGrades.Services
                     Cells = cells
                 });
 
-                
+
                 var groupStudents = students
                     .Where(s => s.GroupId == group.Id)
                     .OrderBy(s => s.Name);

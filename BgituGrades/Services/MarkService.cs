@@ -4,7 +4,6 @@ using BgituGrades.Entities;
 using BgituGrades.Models.Class;
 using BgituGrades.Models.Mark;
 using BgituGrades.Repositories;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using System.Text.Json;
 
@@ -40,7 +39,7 @@ namespace BgituGrades.Services
 
         public async Task<IEnumerable<MarkResponse>> GetAllMarksAsync(CancellationToken cancellationToken)
         {
-  
+
             var cached = await GetFromCacheAsync<IEnumerable<MarkResponse>>(AllMarksKey);
             if (cached != null)
                 return cached;

@@ -1,14 +1,18 @@
 ﻿using Newtonsoft.Json;
 
-namespace BgituGradesLoader.Compass.Objects {
+namespace BgituGradesLoader.Compass.Objects
+{
     [Serializable]
-    public class CompassConfig {
+    public class CompassConfig
+    {
         [JsonProperty] private DateTime termStartDate;
 
 
         public DateTime AproximateWeek => termStartDate;
-        public int AproximateWeekNumber {
-            get {
+        public int AproximateWeekNumber
+        {
+            get
+            {
                 int weekNum = (DateTime.Now - termStartDate).Days / 7 + 1;
 
                 if (weekNum % 2 == 0)

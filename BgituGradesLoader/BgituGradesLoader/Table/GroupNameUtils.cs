@@ -1,8 +1,10 @@
 ﻿using System.Text;
 using System.Text.RegularExpressions;
 
-namespace BgituGradesLoader.Table {
-    public static class GroupNameUtils {
+namespace BgituGradesLoader.Table
+{
+    public static class GroupNameUtils
+    {
         private static readonly Dictionary<string, string> _groupNamesExceptions = new() {
             { "Программная инженерия", "ПРИ" },
             { "Садоводство", "САД" },
@@ -30,10 +32,12 @@ namespace BgituGradesLoader.Table {
             { "Технологические машины и оборудование", "ТМО"}
         };
 
-        public static string GenerateGroupName(string groupName, DirectionType directionType, int course) {
+        public static string GenerateGroupName(string groupName, DirectionType directionType, int course)
+        {
             StringBuilder result = new();
             result.Append(ReduceGroupName(groupName, directionType));
-            switch (directionType) {
+            switch (directionType)
+            {
                 case DirectionType.MasterDegree: result.Append('м'); break;
                 case DirectionType.Accelerated: result.Append('у'); break;
                 case DirectionType.SPO11: case DirectionType.SPO9: result.Append("(СПО)"); break;
@@ -42,7 +46,8 @@ namespace BgituGradesLoader.Table {
             result.Append('-');
             result.Append(course);
 
-            switch (directionType) {
+            switch (directionType)
+            {
                 case DirectionType.SPO9: result.Append("09"); break;
                 case DirectionType.SPO11: result.Append("11"); break;
                 default: result.Append("01"); break;
@@ -51,23 +56,27 @@ namespace BgituGradesLoader.Table {
             return result.ToString();
         }
 
-        public static string SimplyfyGroupName(string groupName) {
+        public static string SimplyfyGroupName(string groupName)
+        {
             Regex regex = new(@"\((а|б|А|Б)\)");
             groupName = regex.Replace(groupName, "");
 
             string[] groupParts = groupName.Split("-");
             bool isSpecial = groupParts[0].EndsWith('м') || groupParts[0].EndsWith('у');
             groupParts[0] = groupParts[0].ToUpper();
-            if (isSpecial) {
+            if (isSpecial)
+            {
                 char lastSymbol = groupParts[0][^1];
                 groupParts[0] = groupParts[0][..^1] + lastSymbol.ToString().ToLower();
             }
-            if (groupParts.Count() == 3) {
+            if (groupParts.Count() == 3)
+            {
                 groupParts = groupParts[..^1];
             }
             groupName = string.Join("-", groupParts);
 
-            if (!groupName.EndsWith("01") && !groupName.EndsWith("09") && !groupName.EndsWith("11")) {
+            if (!groupName.EndsWith("01") && !groupName.EndsWith("09") && !groupName.EndsWith("11"))
+            {
                 groupName = groupName[..^2];
                 groupName += "01";
             }
@@ -75,7 +84,8 @@ namespace BgituGradesLoader.Table {
             return groupName;
         }
 
-        private static string ReduceGroupName(string groupName, DirectionType directionType) {
+        private static string ReduceGroupName(string groupName, DirectionType directionType)
+        {
             if (directionType == DirectionType.MasterDegree && _groupNamesMasterExceptions.TryGetValue(groupName, out string? masterVersion))
                 return masterVersion;
 
@@ -84,7 +94,8 @@ namespace BgituGradesLoader.Table {
 
             StringBuilder result = new();
             groupName = groupName.Replace(",", "").ToUpper();
-            foreach (var word in groupName.Split()) {
+            foreach (var word in groupName.Split())
+            {
                 if (word == "И" || word == "ПО")
                     continue;
 
@@ -93,7 +104,8 @@ namespace BgituGradesLoader.Table {
             return result.ToString();
         }
 
-        public static string AddMasterToGroupName(string name) {
+        public static string AddMasterToGroupName(string name)
+        {
             string[] groupParts = name.Split("-");
             groupParts[0] = groupParts[0] + "м";
             return string.Join("-", groupParts);

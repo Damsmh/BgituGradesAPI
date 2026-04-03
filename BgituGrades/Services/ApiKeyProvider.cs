@@ -1,5 +1,4 @@
 ﻿using AspNetCore.Authentication.ApiKey;
-using BgituGrades.Data;
 using BgituGrades.Features;
 using BgituGrades.Repositories;
 

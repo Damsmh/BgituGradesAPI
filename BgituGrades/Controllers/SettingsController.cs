@@ -23,7 +23,7 @@ namespace BgituGrades.Controllers
             return Ok(settings);
         }
 
-        
+
         [HttpPut]
         [ApiVersion("2.0")]
         public async Task<IActionResult> UpdateSettings([FromBody] UpdateSettingRequest request, CancellationToken cancellationToken)

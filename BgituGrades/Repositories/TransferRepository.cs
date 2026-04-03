@@ -69,7 +69,7 @@ namespace BgituGrades.Repositories
         public async Task<IEnumerable<Transfer>> GetTransfersByGroupAndDisciplineAsync(int groupId, int disciplineId, CancellationToken cancellationToken)
         {
             using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
-            var entities =  await context.Transfers
+            var entities = await context.Transfers
                 .Where(t => t.DisciplineId == disciplineId &&
                             t.GroupId == groupId)
                 .AsNoTracking()

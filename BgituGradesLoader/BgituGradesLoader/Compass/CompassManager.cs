@@ -3,14 +3,17 @@ using Newtonsoft.Json;
 using System.Net;
 using System.Web;
 
-namespace BgituGradesLoader.Compass {
-    public static class CompassManager {
+namespace BgituGradesLoader.Compass
+{
+    public static class CompassManager
+    {
         private const string API_LINK = "https://api-ssl.bgitu-compass.ru/";
         private const string GROUPS_LINK = API_LINK + "groups";
         private const string SCHEDULE_LINK = API_LINK + "v3/lessons";
         private const string CONFIG_LINK = API_LINK + "remoteConfig";
 
-        public static async Task<List<CompassPair>?> GetGroupPairs(int groupID) {
+        public static async Task<List<CompassPair>?> GetGroupPairs(int groupID)
+        {
             UriBuilder uriBuilder = new(SCHEDULE_LINK);
             var query = HttpUtility.ParseQueryString(uriBuilder.Query);
             query["groupId"] = groupID.ToString();
@@ -27,7 +30,8 @@ namespace BgituGradesLoader.Compass {
             return GetPairsFromContent(content);
         }
 
-        private static List<CompassPair>? GetPairsFromContent(string content) {
+        private static List<CompassPair>? GetPairsFromContent(string content)
+        {
             var dictionary = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, List<CompassPair>>>>(content);
             List<CompassPair> result = [];
 
@@ -39,11 +43,14 @@ namespace BgituGradesLoader.Compass {
                 return result;
             List<string> days = [.. dictionary[weeks[0]].Keys];
 
-            for (int weekNum = 0; weekNum < weeks.Count; weekNum++) {
+            for (int weekNum = 0; weekNum < weeks.Count; weekNum++)
+            {
                 string? week = weeks[weekNum];
-                for (int dayNum = 0; dayNum < days.Count; dayNum++) {
+                for (int dayNum = 0; dayNum < days.Count; dayNum++)
+                {
                     string? day = days[dayNum];
-                    foreach (CompassPair pair in dictionary[week][day]) {
+                    foreach (CompassPair pair in dictionary[week][day])
+                    {
                         pair.SetWeekAndDay(weekNum + 1, dayNum + 1);
                         result.Add(pair);
                     }
@@ -53,7 +60,8 @@ namespace BgituGradesLoader.Compass {
             return result;
         }
 
-        public static async Task<List<CompassGroup>> GetGroups() {
+        public static async Task<List<CompassGroup>> GetGroups()
+        {
             HttpClient client = new();
             HttpResponseMessage response = await client.GetAsync(GROUPS_LINK);
 
@@ -66,7 +74,8 @@ namespace BgituGradesLoader.Compass {
             return result;
         }
 
-        public static async Task<CompassConfig?> GetConfig() {
+        public static async Task<CompassConfig?> GetConfig()
+        {
             HttpClient client = new();
             HttpResponseMessage response = await client.GetAsync(CONFIG_LINK);
 

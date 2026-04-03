@@ -3,8 +3,10 @@ using BgituGradesLoader.Database.Tables;
 using DocumentFormat.OpenXml.Spreadsheet;
 using System.Text.RegularExpressions;
 
-namespace BgituGradesLoader.Table {
-    public class TableData {
+namespace BgituGradesLoader.Table
+{
+    public class TableData
+    {
         private readonly List<string> _mergedCellsList;
         private readonly SharedStringTable _stringTable;
 
@@ -18,7 +20,8 @@ namespace BgituGradesLoader.Table {
 
         public TableState NowState => _nowState;
 
-        public TableData(List<string> mergedCellsList, SharedStringTable stringTable) {
+        public TableData(List<string> mergedCellsList, SharedStringTable stringTable)
+        {
             _mergedCellsList = mergedCellsList;
             _stringTable = stringTable;
 
@@ -31,16 +34,19 @@ namespace BgituGradesLoader.Table {
             _directionType = DirectionType.Bachelor;
         }
 
-        public void AddRow(Row row) {
+        public void AddRow(Row row)
+        {
             Cell firstCell = row.Elements<Cell>().First();
             string cellText = TableUtils.GetTextFromCell(firstCell, _stringTable);
 
-            switch (_nowState) {
+            switch (_nowState)
+            {
                 case TableState.CollectGroupNames:
                     CollectGroupNameFromCell(cellText);
                     break;
                 case TableState.WaitForCalendars:
-                    if (cellText != TableUtils.EMPTY_CELL_PLACEHOLDER) {
+                    if (cellText != TableUtils.EMPTY_CELL_PLACEHOLDER)
+                    {
                         _nowState = TableState.CollectCalendars;
                         CollectCalendarFromRow(row, cellText);
                     }
@@ -51,8 +57,10 @@ namespace BgituGradesLoader.Table {
             }
         }
 
-        private void CollectGroupNameFromCell(string cell) {
-            if (cell == TableUtils.EMPTY_CELL_PLACEHOLDER) {
+        private void CollectGroupNameFromCell(string cell)
+        {
+            if (cell == TableUtils.EMPTY_CELL_PLACEHOLDER)
+            {
                 GenerateGroupNamesFromProfilesAndDirections();
                 _nowState = TableState.WaitForCalendars;
                 return;
@@ -67,8 +75,10 @@ namespace BgituGradesLoader.Table {
 
             Regex regex = new(@"профиль\s+\""([^\""]+)\""");
             MatchCollection matches = regex.Matches(cell);
-            if (matches.Count > 0) {
-                foreach (Match match in matches) {
+            if (matches.Count > 0)
+            {
+                foreach (Match match in matches)
+                {
                     string pureName = match.Value.Split("\"")[1];
                     _profiles.Add(pureName);
                 }
@@ -77,53 +87,65 @@ namespace BgituGradesLoader.Table {
             Regex regexBrackets = new(@"\(([^\""]+)\)");
             string nameWithoutBrackets = regexBrackets.Replace(cell, "").Trim();
 
-            if (cell.StartsWith("направление подготовки")) {
+            if (cell.StartsWith("направление подготовки"))
+            {
                 string directionName = string.Join(" ", nameWithoutBrackets.Split().Skip(3));
                 _directions.Add(directionName);
             }
 
-            if (cell.StartsWith("специальность")) {
+            if (cell.StartsWith("специальность"))
+            {
                 string directionName = string.Join(" ", nameWithoutBrackets.Split().Skip(2));
                 _directions.Add(directionName);
             }
         }
 
-        private void GenerateGroupNamesFromProfilesAndDirections() {
+        private void GenerateGroupNamesFromProfilesAndDirections()
+        {
             if (_profiles.Count > 0)
                 _groupNames = _profiles;
             else
                 _groupNames = _directions;
         }
 
-        public void CollectCalendarFromRow(Row row, string firstCellText) {
+        public void CollectCalendarFromRow(Row row, string firstCellText)
+        {
             Regex regex = new(@"\d курс(\w*)");
             MatchCollection matches = regex.Matches(firstCellText);
 
-            if (matches.Count > 0) {
+            if (matches.Count > 0)
+            {
                 int courseNumber = Convert.ToInt32(firstCellText.Split()[0]);
                 TableCalendar calendar = new(courseNumber, _mergedCellsList, _stringTable);
                 _calendars.Add(calendar);
             }
 
             TableCalendar lastCalendar = _calendars[^1];
-            if (lastCalendar.Rows == 6) {
+            if (lastCalendar.Rows == 6)
+            {
                 _nowState = TableState.ForceEnd;
-            } else {
+            }
+            else
+            {
                 lastCalendar.AddRow(row);
             }
         }
 
-        public List<DatabaseGroup> CompileTable(CompassConfig config) {
+        public List<DatabaseGroup> CompileTable(CompassConfig config)
+        {
             List<DatabaseGroup> groups = [];
-            foreach (var calendar in _calendars) {
+            foreach (var calendar in _calendars)
+            {
                 calendar.CompileCalendar();
                 if (calendar.HaveDiplom() && _directionType == DirectionType.Bachelor && _calendars[^1].GroupCourse == 2)
                     _directionType = DirectionType.MasterDegree;
             }
 
-            foreach (var calendar in _calendars) {
+            foreach (var calendar in _calendars)
+            {
                 DatabaseGroup group = calendar.GetGroupData(config);
-                foreach (var groupName in _groupNames) {
+                foreach (var groupName in _groupNames)
+                {
                     string shortName = GroupNameUtils.GenerateGroupName(groupName, _directionType, calendar.GroupCourse);
                     DatabaseGroup groupCopy = group.Copy();
                     groupCopy.SetName(shortName);
@@ -135,14 +157,16 @@ namespace BgituGradesLoader.Table {
         }
     }
 
-    public enum TableState {
+    public enum TableState
+    {
         CollectGroupNames,
         WaitForCalendars,
         CollectCalendars,
         ForceEnd
     }
 
-    public enum DirectionType {
+    public enum DirectionType
+    {
         Bachelor,
         MasterDegree,
         Accelerated,

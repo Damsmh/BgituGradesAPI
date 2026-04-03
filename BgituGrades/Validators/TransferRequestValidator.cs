@@ -1,5 +1,5 @@
-using FluentValidation;
 using BgituGrades.Models.Transfer;
+using FluentValidation;
 
 namespace BgituGrades.Validators
 {

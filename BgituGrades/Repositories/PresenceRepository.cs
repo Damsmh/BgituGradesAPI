@@ -2,9 +2,6 @@
 using BgituGrades.Entities;
 using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
-using NetTopologySuite.Noding;
-using System.Text.RegularExpressions;
 
 namespace BgituGrades.Repositories
 {
@@ -125,7 +122,7 @@ namespace BgituGrades.Repositories
             return await context.Presences.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id, cancellationToken: cancellationToken);
         }
 
-        public async Task BulkInsertPresencesAsync(Dictionary<int, Dictionary<int, IEnumerable<DateOnly>>> studentDisciplines, 
+        public async Task BulkInsertPresencesAsync(Dictionary<int, Dictionary<int, IEnumerable<DateOnly>>> studentDisciplines,
             CancellationToken cancellationToken)
         {
             using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);

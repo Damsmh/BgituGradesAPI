@@ -1,9 +1,9 @@
 ﻿using Asp.Versioning;
 using BgituGrades.Data;
+using BgituGrades.Entities;
 using BgituGrades.Models.Mark;
 using BgituGrades.Models.Student;
 using BgituGrades.Services;
-using BgituGrades.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -42,7 +42,7 @@ namespace BgituGrades.Controllers
         {
             var marks = await _markService.GetMarksByDisciplineAndGroupAsync(request, cancellationToken: cancellationToken);
             if (marks == null)
-                return NotFound(new {disciplineId = request.DisciplineId, groupId = request.GroupId});
+                return NotFound(new { disciplineId = request.DisciplineId, groupId = request.GroupId });
             return Ok(marks);
         }
 

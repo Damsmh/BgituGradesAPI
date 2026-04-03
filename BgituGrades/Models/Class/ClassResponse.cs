@@ -1,7 +1,6 @@
 ﻿using BgituGrades.Entities;
 using BgituGrades.Models.Mark;
 using BgituGrades.Models.Presence;
-using BgituGrades.Models.Student;
 
 namespace BgituGrades.Models.Class
 {

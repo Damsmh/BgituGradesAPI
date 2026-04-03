@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace BgituGrades.Models.Work
+﻿namespace BgituGrades.Models.Work
 {
     public class WorkResponse
     {

@@ -12,7 +12,7 @@ namespace BgituGrades.Hubs
     {
         private readonly IReportService _reportService = reportService;
         private readonly IArchivedReportService _archivedReportService = archivedReportService;
-        
+
         [Channel("hubs/report/GenerateReport")]
         [PublishOperation(typeof(ReportRequest), Summary = "Запросить формирование отчёта", OperationId = nameof(GenerateReport))]
         public async Task GenerateReport(ReportRequest request)

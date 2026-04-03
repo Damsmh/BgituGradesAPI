@@ -20,7 +20,7 @@ namespace BgituGrades.Services
     }
     public class MigrationsService(IClassRepository classRepository, IDisciplineRepository disciplineRepository,
         IGroupRepository groupRepository, IMarkRepository markRepository, IReportSnapshotRepository reportSnapshotRepository,
-        IPresenceRepository presenceRepository, ITransferRepository transferRepository, 
+        IPresenceRepository presenceRepository, ITransferRepository transferRepository,
         IWorkRepository workRepository, IServiceScopeFactory scopeFactory) : IMigrationService
     {
         private readonly IClassRepository _classRepository = classRepository;
@@ -31,8 +31,8 @@ namespace BgituGrades.Services
         private readonly IWorkRepository _workRepository = workRepository;
         private readonly IMarkRepository _markRepository = markRepository;
         private readonly IReportSnapshotRepository _reportSnapshotRepository = reportSnapshotRepository;
-        
-        public async Task<IEnumerable<PeriodResponse>>GetAllPeriods(CancellationToken cancellationToken)
+
+        public async Task<IEnumerable<PeriodResponse>> GetAllPeriods(CancellationToken cancellationToken)
         {
             var periods = await _reportSnapshotRepository.GetAllReportSnapshotsAsync(cancellationToken: cancellationToken);
             return periods

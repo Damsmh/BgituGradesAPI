@@ -1,12 +1,13 @@
-﻿using BgituGrades.Data;
+﻿using AutoMapper;
+using BgituGrades.Data;
 using BgituGrades.Entities;
-using Microsoft.EntityFrameworkCore;
-using AutoMapper;
 using BgituGrades.Models.Group;
+using Microsoft.EntityFrameworkCore;
 
 namespace BgituGrades.Repositories
 {
-    public interface IGroupRepository {
+    public interface IGroupRepository
+    {
         Task<IEnumerable<Group>> GetGroupsByDisciplineAsync(int disciplineId, CancellationToken cancellationToken);
         Task<IEnumerable<Group>> GetAllAsync(CancellationToken cancellationToken);
         Task<Group> CreateGroupAsync(Group entity, CancellationToken cancellationToken);
@@ -67,7 +68,7 @@ namespace BgituGrades.Repositories
             var archivedGroups = await context.ReportSnapshots
                 .AsNoTracking()
                 .Where(r => r.Semester == semester && r.Year == year)
-                .Select(r => new { r.GroupId, r.GroupName} )
+                .Select(r => new { r.GroupId, r.GroupName })
                 .Distinct()
                 .Select(r => new Group { Id = r.GroupId, Name = r.GroupName })
                 .ToListAsync(cancellationToken: cancellationToken);

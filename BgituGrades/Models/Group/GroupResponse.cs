@@ -1,6 +1,4 @@
-﻿using BgituGrades.Entities;
-
-namespace BgituGrades.Models.Group
+﻿namespace BgituGrades.Models.Group
 {
     public class GroupResponse
     {

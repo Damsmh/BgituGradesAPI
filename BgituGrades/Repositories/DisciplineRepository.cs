@@ -1,11 +1,11 @@
-﻿using AutoMapper;
-using BgituGrades.Data;
+﻿using BgituGrades.Data;
 using BgituGrades.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace BgituGrades.Repositories
 {
-    public interface IDisciplineRepository {
+    public interface IDisciplineRepository
+    {
         Task<IEnumerable<Discipline>> GetAllAsync(CancellationToken cancellationToken);
         Task<Discipline> CreateDisciplineAsync(Discipline entity, CancellationToken cancellationToken);
         Task<Discipline?> GetByIdAsync(int id, CancellationToken cancellationToken);
@@ -25,7 +25,7 @@ namespace BgituGrades.Repositories
         {
             using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
             await context.Disciplines.AddAsync(entity);
-            await context.SaveChangesAsync(cancellationToken: cancellationToken);  
+            await context.SaveChangesAsync(cancellationToken: cancellationToken);
             return entity;
         }
 
@@ -128,13 +128,13 @@ namespace BgituGrades.Repositories
             var archivedDisciplines = await context.ReportSnapshots
                 .AsNoTracking()
                 .Where(r => groupIds.Contains(r.GroupId))
-                .Select(r => new 
+                .Select(r => new
                 {
                     r.DisciplineId,
                     r.DisciplineName
                 })
                 .Distinct()
-                .Select(r => new Discipline { Id = r.DisciplineId, Name = r.DisciplineName})
+                .Select(r => new Discipline { Id = r.DisciplineId, Name = r.DisciplineName })
                 .ToListAsync(cancellationToken: cancellationToken);
             return archivedDisciplines;
         }

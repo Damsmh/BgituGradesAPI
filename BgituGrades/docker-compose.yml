@@ -11,14 +11,26 @@ services:
       - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT}
       - ConnectionStrings__PostgreSQL=Host=db;Port=${DB_PORT};Database=${DB_NAME};Username=${DB_USER};Password=${DB_PASSWORD};Pooling=true;MinPoolSize=10;MaxPoolSize=150;Keepalive=60
       - ConnectionStrings__Redis=redis:${REDIS_PORT}
+      - ScheduleLoader__ExecutablePath=/app/loader/BgituGradesLoader
+    volumes:
+      - loader-bin:/app/loader
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
+      loader-builder:
+        condition: service_completed_successfully
+
+  loader-builder:
+    build:
+      context: ./BgituGradesLoader
+      dockerfile: Dockerfile
+    volumes:
+      - loader-bin:/app/publish
 
   db:
-    image: postgres:16-alpine
+    image: postgres:17-alpine
     container_name: grades-db
     restart: unless-stopped
     environment:
@@ -46,3 +58,4 @@ services:
 
 volumes:
   postgres_data:
+  loader-bin:

@@ -4,17 +4,19 @@ namespace BgituGrades.Services
 {
     public interface IScheduleLoaderService
     {
-        Task<bool> RunAsync(CancellationToken cancellationToken);
+        Task<bool> RunAsync(string apiKey, CancellationToken cancellationToken);
     }
-    public class ScheduleLoaderService(IConfiguration config) : IScheduleLoaderService
+    public class ScheduleLoaderService(IConfiguration config, ILogger<IScheduleLoaderService> logger) : IScheduleLoaderService
     {
         private readonly IConfiguration _config = config;
+        private readonly ILogger<IScheduleLoaderService> _logger = logger;
 
-        public async Task<bool> RunAsync(CancellationToken cancellationToken)
+        public async Task<bool> RunAsync(string apiKey, CancellationToken cancellationToken)
         {
             var loaderPath = _config["ScheduleLoader:ExecutablePath"];
             if (string.IsNullOrEmpty(loaderPath) || !File.Exists(loaderPath))
             {
+                _logger.LogError("Loader executable not found at path: {LoaderPath}", loaderPath);
                 return false;
             }
 
@@ -26,7 +28,7 @@ namespace BgituGrades.Services
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 Environment = {
-                    ["GRADES_API_KEY"] = _config["ApiKey"] ?? ""
+                    ["GRADES_API_KEY"] = apiKey
                 }
             };
 

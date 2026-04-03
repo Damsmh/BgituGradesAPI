@@ -178,7 +178,7 @@ namespace BgituGrades
                 app.MapAsyncApiDocuments();
             }
 
-            
+
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseCors();

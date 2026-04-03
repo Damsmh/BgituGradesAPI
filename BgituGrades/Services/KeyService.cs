@@ -25,9 +25,9 @@ namespace BgituGrades.Services
 
             var apiKey = new ApiKey
             {
-                Key = newKey,                   
+                Key = newKey,
                 LookupHash = _hasher.ComputeLookupHash(newKey),
-                StoredHash = _hasher.Hash(newKey),        
+                StoredHash = _hasher.Hash(newKey),
                 OwnerName = "bgitugrades",
                 Role = role.ToString(),
                 GroupId = groupId,

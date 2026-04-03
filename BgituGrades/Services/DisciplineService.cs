@@ -85,7 +85,7 @@ namespace BgituGrades.Services
 
                 if (entities != null && entities.Any())
                 {
-                    
+
 
                     foreach (var groupId in missingIds)
                     {
@@ -175,7 +175,7 @@ namespace BgituGrades.Services
             }
         }
 
-        
+
     }
 
 }

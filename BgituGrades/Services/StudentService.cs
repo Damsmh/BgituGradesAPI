@@ -20,7 +20,7 @@ namespace BgituGrades.Services
     }
     public partial class StudentService(IStudentRepository studentRepository, IPresenceRepository presenceRepository,
         IClassService classService, IDisciplineRepository disciplineRepository, IGroupService groupService, IMapper mapper) : IStudentService
-        
+
     {
         private readonly IStudentRepository _studentRepository = studentRepository;
         private readonly IPresenceRepository _presenceRepository = presenceRepository;
@@ -131,16 +131,16 @@ namespace BgituGrades.Services
                     leavedStudents.Add(officialId);
                     continue;
                 }
-                        
+
 
                 var groupName = sheet.Cells[row, COL_GROUP_NAME + 1].GetValue<string>()?.Trim();
-                
+
                 if (string.IsNullOrEmpty(groupName))
                 {
                     result.SkippedRows++;
                     continue;
                 }
-                
+
                 List<int> targetGroupIds;
                 if (groupsByName.TryGetValue(groupName, out int exactGroupId))
                 {

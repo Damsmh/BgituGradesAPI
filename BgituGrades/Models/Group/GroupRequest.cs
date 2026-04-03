@@ -1,6 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
-using BgituGrades.Entities;
-using BgituGrades.Features;
+﻿using BgituGrades.Features;
+using System.ComponentModel.DataAnnotations;
 
 namespace BgituGrades.Models.Group
 {
