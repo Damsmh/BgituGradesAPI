@@ -11,11 +11,9 @@ namespace BgituGradesLoader.Database.Tables
         [JsonProperty] private readonly string studyStartDate;
         [JsonProperty] private readonly string studyEndDate;
         [JsonProperty] private readonly int startWeekNumber;
-        [JsonProperty] public int courseNumber;
 
         public int Id => id;
         public string? Name => name;
-        public int CourseNumber => courseNumber;
 
         public DatabaseGroup(string startDate, string endDate, int startWeekNumber)
         {
@@ -33,11 +31,6 @@ namespace BgituGradesLoader.Database.Tables
         public void SetName(string newName)
         {
             name = newName;
-        }
-
-        public void SetCourseNumber(int course)
-        {
-            courseNumber = course;
         }
 
         public override string ToString()

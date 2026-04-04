@@ -9,6 +9,6 @@ namespace BgituGrades.DTO
         public DateOnly StudyStartDate { get; set; }
         public DateOnly StudyEndDate { get; set; }
         public int StartWeekNumber { get; set; }
-        public int CourseNumber { get; set; }
+        public SubGroup? SubGroup { get; set; }
     }
 }

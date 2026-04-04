@@ -1,6 +1,8 @@
 services:
   api:
-    image: ghcr.io/bgitugrades-team/bgitu-grades-api:latest
+    build: 
+      context: ./BgituGrades
+      dockerfile: Dockerfile
     container_name: bgitu-grades
     restart: unless-stopped
     ports:
@@ -17,9 +19,13 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      loader-builder:
+        condition: service_completed_successfully
 
-  loader-init:
-    image: ghcr.io/bgitugrades-team/bgitu-grades-loader:latest
+  loader-builder:
+    build:
+      context: ./BgituGradesLoader
+      dockerfile: Dockerfile
     volumes:
       - loader-bin:/app/target_volume
     command: >

@@ -39,6 +39,7 @@ namespace BgituGrades.Services
         public async Task<GroupResponse> CreateGroupAsync(CreateGroupRequest request, CancellationToken cancellationToken)
         {
             var entity = _mapper.Map<Group>(request);
+            entity.CourseNumber = GroupCourseParser.Parse(entity.Name);
             var createdEntity = await _groupRepository.CreateGroupAsync(entity, cancellationToken: cancellationToken);
 
             await _cache.RemoveAsync(AllGroupsKey);
@@ -89,6 +90,7 @@ namespace BgituGrades.Services
         public async Task<bool> UpdateGroupAsync(UpdateGroupRequest request, CancellationToken cancellationToken)
         {
             var entity = _mapper.Map<Group>(request);
+            entity.CourseNumber = GroupCourseParser.Parse(entity.Name);
             var result = await _groupRepository.UpdateGroupAsync(entity, cancellationToken: cancellationToken);
             if (result)
             {

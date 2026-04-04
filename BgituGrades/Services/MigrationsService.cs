@@ -1,7 +1,5 @@
-﻿using AutoMapper;
-using BgituGrades.Data;
+﻿using BgituGrades.Data;
 using BgituGrades.Entities;
-using BgituGrades.Models.Migration;
 using BgituGrades.Models.Report;
 using BgituGrades.Repositories;
 using EFCore.BulkExtensions;
@@ -19,12 +17,11 @@ namespace BgituGrades.Services
                 date.Month >= 9 ? 1 : 2;
         public static int GetCurrentSemester() =>
                 GetCurrentSemester(DateOnly.FromDateTime(DateTime.Now));
-        Task<bool> ScheduleImport(ScheduleImportRequest request, CancellationToken cancellationToken);
     }
     public class MigrationsService(IClassRepository classRepository, IDisciplineRepository disciplineRepository,
         IGroupRepository groupRepository, IMarkRepository markRepository, IReportSnapshotRepository reportSnapshotRepository,
         IPresenceRepository presenceRepository, ITransferRepository transferRepository,
-        IWorkRepository workRepository, IServiceScopeFactory scopeFactory, IMapper mapper) : IMigrationService
+        IWorkRepository workRepository, IServiceScopeFactory scopeFactory) : IMigrationService
     {
         private readonly IClassRepository _classRepository = classRepository;
         private readonly IDisciplineRepository _disciplineRepository = disciplineRepository;
@@ -34,7 +31,6 @@ namespace BgituGrades.Services
         private readonly IWorkRepository _workRepository = workRepository;
         private readonly IMarkRepository _markRepository = markRepository;
         private readonly IReportSnapshotRepository _reportSnapshotRepository = reportSnapshotRepository;
-        private readonly IMapper _mapper = mapper;
 
         public async Task<IEnumerable<PeriodResponse>> GetAllPeriods(CancellationToken cancellationToken)
         {
@@ -193,31 +189,6 @@ namespace BgituGrades.Services
                 throw;
             }
             await db.BulkInsertAsync(archives, cancellationToken: cancellationToken);
-        }
-
-        public async Task<bool> ScheduleImport(ScheduleImportRequest request, CancellationToken cancellationToken)
-        {
-            using var scope = scopeFactory.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-            var groupEntities = _mapper.Map<List<Group>>(request.Groups);
-            var disciplineEntities = _mapper.Map<List<Discipline>>(request.Disciplines);
-            var classEntities = _mapper.Map<List<Class>>(request.Pairs);
-
-            await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
-            try
-            {
-                await db.BulkInsertAsync(groupEntities, cancellationToken: cancellationToken);
-                await db.BulkInsertAsync(disciplineEntities, cancellationToken: cancellationToken);
-                await db.BulkInsertAsync(classEntities, cancellationToken: cancellationToken);
-                await transaction.CommitAsync(cancellationToken);
-                return true;
-            }
-            catch
-            {
-                await transaction.RollbackAsync(cancellationToken);
-                throw;
-            }
         }
     }
 }
