@@ -1,0 +1,47 @@
+name: Build & Push project
+
+on:
+  push:
+    branches: [master]
+
+env:
+  REGISTRY: ghcr.io
+  OWNER: ${{ github.repository_owner }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push API image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./BgituGrades
+          file: ./BgituGrades/Dockerfile
+          push: true
+          tags: ghcr.io/${{ env.OWNER }}/bgitu-grades-api:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build & push Loader image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./BgituGradesLoader
+          file: ./BgituGradesLoader/Dockerfile
+          push: true
+          tags: ghcr.io/${{ env.OWNER }}/bgitu-grades-loader:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
