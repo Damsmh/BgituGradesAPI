@@ -11,6 +11,8 @@ namespace BgituGradesLoader.Database
         private const string API_GROUP = API_LINK + "group";
         private const string API_DISCIPLINE = API_LINK + "discipline";
         private const string API_PAIR = API_LINK + "class";
+        private const string API_BULK_IMPORT = API_LINK + "migrations/schedule/import";
+
 
         public static async Task NukeDatabase()
         {
@@ -39,6 +41,17 @@ namespace BgituGradesLoader.Database
             await AddObjectToDatabase(pair, API_PAIR, "пару");
         }
 
+        public static async Task AddAllSchedule(List<DatabaseGroup> groups, List<DatabaseDiscipline> disciplines, List<DatabasePair> pairs)
+        {
+            var payload = new
+            {
+                Groups = groups,
+                Disciplines = disciplines,
+                Pairs = pairs
+            };
+            await AddScheduleToDatabase(payload, API_BULK_IMPORT);
+        }
+
         private static async Task<T> AddObjectToDatabase<T>(T obj, string apiLink, string objName)
         {
             using HttpClient client = new();
@@ -63,6 +76,20 @@ namespace BgituGradesLoader.Database
                 return obj;
             }
             return resultObject;
+        }
+
+        private static async Task AddScheduleToDatabase<T>(T obj, string apiLink)
+        {
+            using HttpClient client = new();
+            HttpRequestMessage request = CreateNewRequest(HttpMethod.Post, apiLink);
+            string content = JsonConvert.SerializeObject(obj);
+            request.Content = new StringContent(content, Encoding.UTF8, "application/json");
+
+            using HttpResponseMessage response = await client.SendAsync(request);
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"Не удалось добавить расписание: {response.StatusCode}");
+            }
         }
 
         private static HttpRequestMessage CreateNewRequest(HttpMethod method, string link)

@@ -1,4 +1,5 @@
 ﻿using BgituGradesLoader.Database;
+using BgituGradesLoader.Database.Tables;
 using BgituGradesLoader.Save.Data;
 
 namespace BgituGradesLoader.Save

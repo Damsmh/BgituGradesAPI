@@ -4,6 +4,7 @@ using BgituGradesLoader.Database;
 using BgituGradesLoader.Database.Tables;
 using BgituGradesLoader.Save;
 using BgituGradesLoader.Table;
+using System.Text.RegularExpressions;
 
 namespace BgituGradesLoader.Menu.Panels
 {
@@ -24,6 +25,18 @@ namespace BgituGradesLoader.Menu.Panels
         {
             DataLoaderPanel panel = new(saveManager, tableManager);
             await panel.Run();
+        }
+
+        private static class GroupCourseParser
+        {
+            private static readonly Regex CourseRegex =
+                new(@"-(\d)\d{2}", RegexOptions.Compiled);
+
+            public static int Parse(string? name)
+            {
+                var match = CourseRegex.Match(name!);
+                return int.Parse(match.Groups[1].Value);
+            }
         }
 
         public async override Task Run()
@@ -81,7 +94,7 @@ namespace BgituGradesLoader.Menu.Panels
             await DatabaseManager.NukeDatabase();
 
             Console.WriteLine("Добавляем группы...");
-            Dictionary<string, DatabaseGroup> groupsDictionary = [];
+            List<DatabaseGroup> databaseGroups = [];
             foreach (CompassGroup group in groups)
             {
                 DatabaseGroup? databaseGroup = _tableManager.GetGroupData(group.Name);
@@ -90,34 +103,37 @@ namespace BgituGradesLoader.Menu.Panels
                     Console.WriteLine($"Не удалось получить информацию о группе {group.Name}");
                     continue;
                 }
-
                 databaseGroup.SetName(group.Name);
-                databaseGroup = await DatabaseManager.AddGroup(databaseGroup);
-                groupsDictionary.Add(group.Name, databaseGroup);
+                databaseGroup.SetCourseNumber(GroupCourseParser.Parse(group.Name));
+                databaseGroups.Add(databaseGroup);
             }
 
             Console.WriteLine("Добавляем дисциплины...");
-            Dictionary<string, DatabaseDiscipline> disciplinesDictionary = [];
-            foreach (var disciplineNames in normalizedDisciplineNames)
-            {
-                DatabaseDiscipline databaseDiscipline = new(disciplineNames.Value);
-                databaseDiscipline = await DatabaseManager.AddDiscipline(databaseDiscipline);
-                disciplinesDictionary.Add(disciplineNames.Key, databaseDiscipline);
-            }
+            List<DatabaseDiscipline> databaseDisciplines = normalizedDisciplineNames
+                .Select(d => new DatabaseDiscipline(d.Value)).ToList();
+
+            Dictionary<string, DatabaseGroup> groupsByName = databaseGroups
+                .ToDictionary(g => g.Name!);
+            Dictionary<string, DatabaseDiscipline> disciplinesByNormalized = databaseDisciplines
+                .Zip(normalizedDisciplineNames.Keys, (d, k) => (k, d))
+                .ToDictionary(x => x.k, x => x.d);
 
             Console.WriteLine("Добавляем пары...");
+            List<DatabasePair> databasePairs = [];
             foreach (CompassPair pair in pairs)
             {
                 DatabasePair databasePair = new(pair);
 
                 string normalizedDiscipline = pair.DisciplineName.NormalizeDisciplineForFiltering();
-                databasePair.SetDiscipline(disciplinesDictionary[normalizedDiscipline]);
+                databasePair.SetDiscipline(disciplinesByNormalized[normalizedDiscipline]);
 
-                DatabaseGroup group = groupsDictionary[pair.GroupName];
+                DatabaseGroup group = groupsByName[pair.GroupName];
                 databasePair.SetGroup(group);
 
-                await DatabaseManager.AddPair(databasePair);
+                databasePairs.Add(databasePair);
             }
+
+            await DatabaseManager.AddAllSchedule(databaseGroups, databaseDisciplines, databasePairs);
 
             Console.WriteLine("Готово!");
         }

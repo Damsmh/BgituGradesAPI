@@ -1,4 +1,5 @@
 ﻿using Asp.Versioning;
+using BgituGrades.Models.Migration;
 using BgituGrades.Models.Report;
 using BgituGrades.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -38,6 +39,14 @@ namespace BgituGrades.Controllers
             {
                 return Conflict(ex.Message);
             }
+        }
+
+        [HttpPost("schedule/import")]
+        [Authorize(Policy = "Admin")]
+        public async Task<IActionResult> ScheduleImport(ScheduleImportRequest request, CancellationToken cancellationToken)
+        {
+            var result = await _migrationService.ScheduleImport(request, cancellationToken);
+            return result ? Ok("Import Success") : StatusCode(500, "Import failed");
         }
 
         [HttpPost("sync")]

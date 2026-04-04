@@ -48,6 +48,8 @@ namespace BgituGrades.Models.Group
         public DateOnly StudyEndDate { get; set; }
         [Required]
         public int StartWeekNumber { get; set; }
+        [Required]
+        public int CourseNumber { get; set; }
     }
 
     public class UpdateGroupRequest
