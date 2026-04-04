@@ -43,9 +43,9 @@ namespace BgituGrades.Services
                 var allSnapshots = await snapshotRepo.GetReportSnapshotsByYearAndSemesterAsync(request.Year, request.Semester, cancellationToken);
 
                 var snapshots = allSnapshots
-                    .Where(s => request.GroupIds == null || request.GroupIds.Contains(s.GroupId))
-                    .Where(s => request.DisciplineIds == null || request.DisciplineIds.Contains(s.DisciplineId))
-                    .Where(s => request.StudentIds == null || request.StudentIds.Contains(s.StudentId))
+                    .Where(s => request.GroupIds == null || (request.IsReverse[0] ? !request.GroupIds!.Contains(s.GroupId) : request.GroupIds.Contains(s.GroupId)))
+                    .Where(s => request.DisciplineIds == null || (request.IsReverse[1] ? !request.DisciplineIds!.Contains(s.DisciplineId) : request.DisciplineIds.Contains(s.DisciplineId)))
+                    .Where(s => request.StudentIds == null || (request.IsReverse[2] ? !request.StudentIds!.Contains(s.StudentId) : request.StudentIds.Contains(s.StudentId)))
                     .ToList();
 
                 if (snapshots.Count == 0)

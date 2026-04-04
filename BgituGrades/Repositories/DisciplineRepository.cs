@@ -15,7 +15,7 @@ namespace BgituGrades.Repositories
         Task<bool> UpdateDisciplineAsync(Discipline entity, CancellationToken cancellationToken);
         Task<bool> DeleteDisciplineAsync(int id, CancellationToken cancellationToken);
         Task DeleteAllAsync(CancellationToken cancellationToken);
-        Task<IEnumerable<Discipline>> GetDisciplinesByIdsAsync(int[] disciplineIds, CancellationToken cancellationToken);
+        Task<IEnumerable<Discipline>> GetDisciplinesByIdsAsync(int[] disciplineIds, bool isReverse, CancellationToken cancellationToken);
         Task<Dictionary<int, IEnumerable<Discipline>>> GetDictByGroupIdsAsync(List<int> groupIds, CancellationToken cancellationToken);
     }
 
@@ -76,12 +76,12 @@ namespace BgituGrades.Repositories
             return await context.Disciplines.FindAsync([id], cancellationToken: cancellationToken);
         }
 
-        public async Task<IEnumerable<Discipline>> GetDisciplinesByIdsAsync(int[] disciplineIds, CancellationToken cancellationToken)
+        public async Task<IEnumerable<Discipline>> GetDisciplinesByIdsAsync(int[] disciplineIds, bool isReverse, CancellationToken cancellationToken)
         {
             using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
             return await context.Disciplines
                 .AsNoTracking()
-                .Where(d => disciplineIds.Contains(d.Id))
+                .Where(d => isReverse ? !disciplineIds.Contains(d.Id) : disciplineIds.Contains(d.Id))
                 .ToListAsync(cancellationToken: cancellationToken);
         }
 

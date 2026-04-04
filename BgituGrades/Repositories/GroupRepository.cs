@@ -18,7 +18,7 @@ namespace BgituGrades.Repositories
         Task<bool> UpdateGroupAsync(Group entity, CancellationToken cancellationToken);
         Task<bool> DeleteGroupAsync(int id, CancellationToken cancellationToken);
         Task DeleteAllAsync(CancellationToken cancellationToken);
-        Task<IEnumerable<Group>> GetGroupsByIdsAsync(int[] groupIds, CancellationToken cancellationToken);
+        Task<IEnumerable<Group>> GetGroupsByIdsAsync(int[] groupIds, bool isReverse, CancellationToken cancellationToken);
         Task<IEnumerable<Group>> GetByIdsAsync(List<int> groupIds, CancellationToken cancellationToken);
         Task<IEnumerable<CourseReponse>> GetArchivedCoursesByPeriodAsync(int year, int semester, CancellationToken cancellationToken);
         Task<IEnumerable<ArchivedGroupResponse>> GetArchivedGroupsByCoursesAsync(IEnumerable<int> courses, CancellationToken cancellationToken);
@@ -162,11 +162,11 @@ namespace BgituGrades.Repositories
             return entities;
         }
 
-        public async Task<IEnumerable<Group>> GetGroupsByIdsAsync(int[] groupIds, CancellationToken cancellationToken)
+        public async Task<IEnumerable<Group>> GetGroupsByIdsAsync(int[] groupIds, bool isReverse, CancellationToken cancellationToken)
         {
             using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
             return await context.Groups
-                .Where(g => groupIds.Contains(g.Id))
+                .Where(g => isReverse ? !groupIds.Contains(g.Id) : groupIds.Contains(g.Id))
                 .Include(g => g.Classes!)
                     .ThenInclude(c => c.Discipline)
                 .AsNoTracking()

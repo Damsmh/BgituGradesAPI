@@ -55,7 +55,7 @@ namespace BgituGrades.Services
                 IEnumerable<Group> groups;
                 if (request.GroupIds != null)
                 {
-                    groups = await groupRepo.GetGroupsByIdsAsync(request.GroupIds, cancellationToken: cancellationToken);
+                    groups = await groupRepo.GetGroupsByIdsAsync(request.GroupIds, request.IsReverse[0], cancellationToken: cancellationToken);
                 }
                 else
                 {
@@ -65,7 +65,7 @@ namespace BgituGrades.Services
                 IEnumerable<Discipline> disciplines;
                 if (request.DisciplineIds != null)
                 {
-                    disciplines = await disciplineRepo.GetDisciplinesByIdsAsync(request.DisciplineIds, cancellationToken: cancellationToken);
+                    disciplines = await disciplineRepo.GetDisciplinesByIdsAsync(request.DisciplineIds, request.IsReverse[1], cancellationToken: cancellationToken);
                 }
                 else
                 {
@@ -75,7 +75,7 @@ namespace BgituGrades.Services
                 IEnumerable<Student> students;
                 if (request.StudentIds != null)
                 {
-                    students = await studentRepo.GetStudentsByIdsAsync(request.StudentIds, cancellationToken: cancellationToken);
+                    students = await studentRepo.GetStudentsByIdsAsync(request.StudentIds, request.IsReverse[2], cancellationToken: cancellationToken);
                 }
                 else
                 {

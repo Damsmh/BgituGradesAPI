@@ -20,7 +20,7 @@ namespace BgituGrades.Repositories
         Task<bool> UpdateStudentAsync(Student entity, CancellationToken cancellationToken);
         Task<bool> DeleteStudentAsync(int id, CancellationToken cancellationToken);
         Task<IEnumerable<Student>> GetArchivedByGroupIdsAsync(int[] groupIds, CancellationToken cancellationToken);
-        Task<IEnumerable<Student>> GetStudentsByIdsAsync(int[] studentIds, CancellationToken cancellationToken);
+        Task<IEnumerable<Student>> GetStudentsByIdsAsync(int[] studentIds, bool isReverse, CancellationToken cancellationToken);
         Task BulkInsertAsync(List<Student> students, CancellationToken cancellationToken);
         Task DeleteByIdsAsync(List<int> studentsIds, CancellationToken cancellationToken);
         Task DeleteAllAsync(CancellationToken cancellationToken);
@@ -154,12 +154,12 @@ namespace BgituGrades.Repositories
             return true;
         }
 
-        public async Task<IEnumerable<Student>> GetStudentsByIdsAsync(int[] studentIds, CancellationToken cancellationToken)
+        public async Task<IEnumerable<Student>> GetStudentsByIdsAsync(int[] studentIds, bool isReverse, CancellationToken cancellationToken)
         {
             using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
             return await context.Students
                 .AsNoTracking()
-                .Where(s => studentIds.Contains(s.Id))
+                .Where(s => isReverse ? !studentIds.Contains(s.Id) : studentIds.Contains(s.Id))
                 .ToListAsync(cancellationToken: cancellationToken);
         }
 
