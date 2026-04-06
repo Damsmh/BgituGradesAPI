@@ -159,7 +159,7 @@ namespace BgituGrades.Repositories
             using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
             return await context.Students
                 .AsNoTracking()
-                .Where(s => isReverse ? !studentIds.Contains(s.Id) : studentIds.Contains(s.Id))
+                .Where(s => studentIds.Contains(s.Id))
                 .ToListAsync(cancellationToken: cancellationToken);
         }
 
