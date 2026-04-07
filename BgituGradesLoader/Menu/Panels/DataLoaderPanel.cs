@@ -107,7 +107,6 @@ namespace BgituGradesLoader.Menu.Panels
             }
 
             Console.WriteLine("Добавляем дисциплины...");
-            Dictionary<string, DatabaseDiscipline> disciplinesDictionary = [];
             List<string> normalizedKeys = normalizedDisciplineNames.Keys.ToList();
             List<DatabaseDiscipline> disciplinesToAdd = normalizedKeys
                 .Select(key => new DatabaseDiscipline(normalizedDisciplineNames[key]))
@@ -115,8 +114,12 @@ namespace BgituGradesLoader.Menu.Panels
 
             List<DatabaseDiscipline> addedDisciplines = await DatabaseManager.AddDisciplines(disciplinesToAdd);
 
-            foreach (var (disciplineNames, addedDiscipline) in normalizedDisciplineNames.Zip(addedDisciplines))
-                disciplinesDictionary.Add(disciplineNames.Key, addedDiscipline);
+            var disciplinesDictionary = new Dictionary<string, DatabaseDiscipline>();
+            foreach (var disc in addedDisciplines)
+            {
+                string key = disc.Name.NormalizeDisciplineForFiltering();
+                disciplinesDictionary[key] = disc;
+            }
 
             Console.WriteLine("Добавляем пары...");
             List<DatabasePair> pairsToAdd = [];

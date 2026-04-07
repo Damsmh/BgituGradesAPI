@@ -41,7 +41,10 @@ namespace BgituGrades.Repositories
         public async Task<IEnumerable<Group>> CreateGroupAsync(IEnumerable<Group> entities, CancellationToken cancellationToken)
         {
             using var context = await contextFactory.CreateDbContextAsync(cancellationToken: cancellationToken);
-            var entityList = entities.ToList();
+            var entityList = entities
+                .GroupBy(g => g.Name)
+                .Select(g => g.First())
+                .ToList();
             var bulkConfig = new BulkConfig { SetOutputIdentity = true };
             await context.BulkInsertAsync(entityList, bulkConfig, cancellationToken: cancellationToken);
             return entityList;

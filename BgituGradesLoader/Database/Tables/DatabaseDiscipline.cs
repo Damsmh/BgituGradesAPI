@@ -9,6 +9,7 @@ namespace BgituGradesLoader.Database.Tables
         [JsonProperty] private readonly string? name;
 
         public int Id => id;
+        public string? Name => name;
 
         public DatabaseDiscipline(string? name)
         {
