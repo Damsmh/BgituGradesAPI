@@ -16,8 +16,8 @@ namespace BgituGradesLoader.Compass.Objects
                 int weekNum = (DateTime.Now - termStartDate).Days / 7 + 1;
 
                 if (weekNum % 2 == 0)
-                    return 1;
-                return 2;
+                    return 2;
+                return 1;
             }
         }
     }
