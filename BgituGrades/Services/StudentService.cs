@@ -32,6 +32,7 @@ namespace BgituGrades.Services
         private const sbyte STATUS_STUDYING = 1;
         private const sbyte STATUS_ACADEMIC_LEAVE = -1;
         private const sbyte STATUS_EXPELLED = 3;
+        private const sbyte STATUS_END = 4;
         private const short BATCH_SIZE = 2000;
         private const byte COL_CODE = 0;
         private const byte COL_LASTNAME = 1;
@@ -126,7 +127,7 @@ namespace BgituGrades.Services
                 var officialId = sheet.Cells[row, COL_CODE + 1].GetValue<int>();
 
                 sbyte status = Convert.ToSByte(statusCell);
-                if (status == STATUS_EXPELLED || status == STATUS_ACADEMIC_LEAVE)
+                if (status == STATUS_EXPELLED || status == STATUS_ACADEMIC_LEAVE || status == STATUS_END)
                 {
                     leavedStudents.Add(officialId);
                     continue;
