@@ -38,9 +38,9 @@ namespace BgituGradesLoader.Menu.Panels
             HashSet<string> disciplinesNames = [];
             List<CompassPair> pairs = [];
 
-            var tasks = groups.Select(async (group, i) => (group, pairs: await CompassManager.GetGroupPairs(group.Id)));
+            var tasks = groups.Select(async group => (group, pairs: await CompassManager.GetGroupPairs(group.Id)));
             IEnumerable<(CompassGroup group, List<CompassPair> pairs)> results = await Task.WhenAll(tasks);
-
+            Console.WriteLine("Группы и их расписание получено...");
             List<int> toRemove = [];
             foreach (var (group, groupPairs) in results)
             {

@@ -12,6 +12,7 @@ namespace BgituGradesLoader.Compass
         private const string SCHEDULE_LINK = API_LINK + "v3/lessons";
         private const string CONFIG_LINK = API_LINK + "remoteConfig";
 
+        private static readonly HttpClient _httpClient = new();
         public static async Task<List<CompassPair>?> GetGroupPairs(int groupID)
         {
             UriBuilder uriBuilder = new(SCHEDULE_LINK);
@@ -20,8 +21,7 @@ namespace BgituGradesLoader.Compass
             uriBuilder.Query = query.ToString();
             string url = uriBuilder.ToString();
 
-            HttpClient client = new();
-            HttpResponseMessage response = await client.GetAsync(url);
+            HttpResponseMessage response = await _httpClient.GetAsync(url);
 
             if (response.StatusCode != HttpStatusCode.OK)
                 return null;
