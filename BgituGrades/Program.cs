@@ -7,6 +7,7 @@ using BgituGrades.Features;
 using BgituGrades.Features.Filters;
 using BgituGrades.Hubs;
 using BgituGrades.Services;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
@@ -156,6 +157,13 @@ namespace BgituGrades
                     logger.LogError(ex, "Ошибка при миграции или создании начального ключа.");
                 }
             }
+
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor
+                                 | ForwardedHeaders.XForwardedProto
+                                 | ForwardedHeaders.XForwardedHost
+            });
 
             var provider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
 

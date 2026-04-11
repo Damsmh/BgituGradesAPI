@@ -62,7 +62,7 @@ namespace BgituGrades.Services
 
                 await hubContext.Clients.Group(reportId.ToString())
                     .SendAsync("ReportReady", reportId.ToString(),
-                        $"https://maxim.pamagiti.site/api/report/{reportId}/download",
+                        $"https://{request.Host}/api/report/{reportId}/download",
                         result.Preview);
             }
             catch (Exception ex)

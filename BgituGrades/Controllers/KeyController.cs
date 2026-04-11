@@ -18,8 +18,8 @@ namespace BgituGrades.Controllers
         [HttpGet("all")]
         [ApiVersion("2.0")]
         [Authorize(Policy = "Admin")]
-        [ProducesResponseType(typeof(IEnumerable<KeyResponse>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<KeyResponse>>> GetKeys(CancellationToken cancellationToken)
+        [ProducesResponseType(typeof(List<KeyResponse>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<List<KeyResponse>>> GetKeys(CancellationToken cancellationToken)
         {
             var Keys = await _keyService.GetKeysAsync(cancellationToken: cancellationToken);
             return Ok(Keys);
@@ -37,6 +37,7 @@ namespace BgituGrades.Controllers
 
         [HttpGet]
         [ApiVersion("2.0")]
+        [Authorize(Policy = "ReadOnly")]
         [ProducesResponseType(typeof(KeyResponse), StatusCodes.Status200OK)]
         public async Task<ActionResult<KeyResponse>> GetKey([FromHeader(Name = "key")] string key, CancellationToken cancellationToken)
         {
@@ -53,7 +54,7 @@ namespace BgituGrades.Controllers
             var key = await _keyService.GenerateKeyAsync(Role.STUDENT, groupId: request.GroupId, cancellationToken: cancellationToken);
             var response = new SharedKeyResponse
             {
-                Link = $"https://{Request.Host}/visit?key={key.Key}"
+                Link = $"{Request.Headers.Origin}/visit?key={key.Key}"
             };
             return Ok(response);
         }

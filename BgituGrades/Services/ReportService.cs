@@ -106,7 +106,7 @@ namespace BgituGrades.Services
                 await _cache.SetAsync($"report_{reportId}", result.ExcelBytes!, cacheOptions);
 
                 await _hubContext.Clients.Group(reportId.ToString())
-                    .SendAsync("ReportReady", reportId.ToString(), $"https://maxim.pamagiti.site/api/report/{reportId}/download", result.Preview);
+                    .SendAsync("ReportReady", reportId.ToString(), $"https://{request.Host}/api/report/{reportId}/download", result.Preview);
             }
             catch (Exception ex)
             {

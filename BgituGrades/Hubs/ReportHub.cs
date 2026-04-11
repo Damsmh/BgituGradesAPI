@@ -19,6 +19,8 @@ namespace BgituGrades.Hubs
         {
             var cancellationToken = Context.ConnectionAborted;
             var connectionId = Context.ConnectionId;
+            var httpContext = Context.GetHttpContext();
+            request.Host = httpContext?.Request.Host.Value ?? string.Empty;
             var reportId = await _reportService.GenerateReportAsync(request, connectionId, cancellationToken: cancellationToken);
 
             await Clients.Caller.SendAsync("ReportStarted", reportId);
@@ -30,6 +32,8 @@ namespace BgituGrades.Hubs
         {
             var cancellationToken = Context.ConnectionAborted;
             var connectionId = Context.ConnectionId;
+            var httpContext = Context.GetHttpContext();
+            request.Host = httpContext?.Request.Host.Value ?? string.Empty;
             var reportId = await _archivedReportService.GenerateReportAsync(request, connectionId, cancellationToken: cancellationToken);
 
             await Clients.Caller.SendAsync("ReportStarted", reportId);
